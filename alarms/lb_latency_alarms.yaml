@@ -1,0 +1,306 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template to create CloudWatch alarms for Load Balancer latency monitoring'
+
+Parameters:
+  AlarmNotificationEmail:
+    Type: String
+    Default: devops@proscore.ai
+    Description: Email address to receive alarm notifications
+  AlarmThreshold:
+    Type: Number
+    Default: 1.0
+    Description: Threshold in seconds for latency alarms
+  EvaluationPeriods:
+    Type: Number
+    Default: 3
+    Description: Number of periods to evaluate before triggering alarm
+  Period:
+    Type: Number
+    Default: 300
+    Description: Evaluation period in seconds (300 = 5 minutes)
+
+Resources:
+  AlarmNotificationTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: LoadBalancerLatencyAlarms
+      TopicName: LoadBalancerLatencyAlarms
+
+  AlarmSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref AlarmNotificationTopic
+      Protocol: email
+      Endpoint: !Ref AlarmNotificationEmail
+
+  DevPortalApiLatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm for high latency on dev-portal-api load balancer
+      AlarmName: DevPortalApiHighLatencyAlarm
+      ComparisonOperator: GreaterThanThreshold
+      EvaluationPeriods: !Ref EvaluationPeriods
+      MetricName: TargetResponseTime
+      Namespace: AWS/ApplicationELB
+      Period: !Ref Period
+      Statistic: Average
+      Threshold: !Ref AlarmThreshold
+      TreatMissingData: notBreaching
+      Dimensions:
+        - Name: LoadBalancer
+          Value: dev-portal-api
+      AlarmActions:
+        - !Ref AlarmNotificationTopic
+      OKActions:
+        - !Ref AlarmNotificationTopic
+  EmployeesPortalDevLatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm for high latency on employees-portal-dev load balancer
+      AlarmName: EmployeesPortalDevHighLatencyAlarm
+      ComparisonOperator: GreaterThanThreshold
+      EvaluationPeriods: !Ref EvaluationPeriods
+      MetricName: TargetResponseTime
+      Namespace: AWS/ApplicationELB
+      Period: !Ref Period
+      Statistic: Average
+      Threshold: !Ref AlarmThreshold
+      TreatMissingData: notBreaching
+      Dimensions:
+        - Name: LoadBalancer
+          Value: employees-portal-dev
+      AlarmActions:
+        - !Ref AlarmNotificationTopic
+      OKActions:
+        - !Ref AlarmNotificationTopic
+
+  AdminDevLbLatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm for high latency on admin-dev-lb load balancer
+      AlarmName: AdminDevLbHighLatencyAlarm
+      ComparisonOperator: GreaterThanThreshold
+      EvaluationPeriods: !Ref EvaluationPeriods
+      MetricName: TargetResponseTime
+      Namespace: AWS/ApplicationELB
+      Period: !Ref Period
+      Statistic: Average
+      Threshold: !Ref AlarmThreshold
+      TreatMissingData: notBreaching
+      Dimensions:
+        - Name: LoadBalancer
+          Value: admin-dev-lb
+      AlarmActions:
+        - !Ref AlarmNotificationTopic
+      OKActions:
+        - !Ref AlarmNotificationTopic
+
+  JenkinsLatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm for high latency on jenkins load balancer
+      AlarmName: JenkinsHighLatencyAlarm
+      ComparisonOperator: GreaterThanThreshold
+      EvaluationPeriods: !Ref EvaluationPeriods
+      MetricName: TargetResponseTime
+      Namespace: AWS/ApplicationELB
+      Period: !Ref Period
+      Statistic: Average
+      Threshold: !Ref AlarmThreshold
+      TreatMissingData: notBreaching
+      Dimensions:
+        - Name: LoadBalancer
+          Value: jenkins
+      AlarmActions:
+        - !Ref AlarmNotificationTopic
+      OKActions:
+        - !Ref AlarmNotificationTopic
+
+  AdminProdLatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm for high latency on admin-prod load balancer
+      AlarmName: AdminProdHighLatencyAlarm
+      ComparisonOperator: GreaterThanThreshold
+      EvaluationPeriods: !Ref EvaluationPeriods
+      MetricName: TargetResponseTime
+      Namespace: AWS/ApplicationELB
+      Period: !Ref Period
+      Statistic: Average
+      Threshold: !Ref AlarmThreshold
+      TreatMissingData: notBreaching
+      Dimensions:
+        - Name: LoadBalancer
+          Value: admin-prod
+      AlarmActions:
+        - !Ref AlarmNotificationTopic
+      OKActions:
+        - !Ref AlarmNotificationTopic
+
+  EmployeePortalProdLatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm for high latency on employee-portal-prod load balancer
+      AlarmName: EmployeePortalProdHighLatencyAlarm
+      ComparisonOperator: GreaterThanThreshold
+      EvaluationPeriods: !Ref EvaluationPeriods
+      MetricName: TargetResponseTime
+      Namespace: AWS/ApplicationELB
+      Period: !Ref Period
+      Statistic: Average
+      Threshold: !Ref AlarmThreshold
+      TreatMissingData: notBreaching
+      Dimensions:
+        - Name: LoadBalancer
+          Value: employee-portal-prod
+      AlarmActions:
+        - !Ref AlarmNotificationTopic
+      OKActions:
+        - !Ref AlarmNotificationTopic
+
+  ProdPortalApiLatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm for high latency on prod-portal-api load balancer
+      AlarmName: ProdPortalApiHighLatencyAlarm
+      ComparisonOperator: GreaterThanThreshold
+      EvaluationPeriods: !Ref EvaluationPeriods
+      MetricName: TargetResponseTime
+      Namespace: AWS/ApplicationELB
+      Period: !Ref Period
+      Statistic: Average
+      Threshold: !Ref AlarmThreshold
+      TreatMissingData: notBreaching
+      Dimensions:
+        - Name: LoadBalancer
+          Value: prod-portal-api
+      AlarmActions:
+        - !Ref AlarmNotificationTopic
+      OKActions:
+        - !Ref AlarmNotificationTopic
+
+  DevPwcApiLatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm for high latency on dev-pwc-api load balancer
+      AlarmName: DevPwcApiHighLatencyAlarm
+      ComparisonOperator: GreaterThanThreshold
+      EvaluationPeriods: !Ref EvaluationPeriods
+      MetricName: TargetResponseTime
+      Namespace: AWS/ApplicationELB
+      Period: !Ref Period
+      Statistic: Average
+      Threshold: !Ref AlarmThreshold
+      TreatMissingData: notBreaching
+      Dimensions:
+        - Name: LoadBalancer
+          Value: dev-pwc-api
+      AlarmActions:
+        - !Ref AlarmNotificationTopic
+      OKActions:
+        - !Ref AlarmNotificationTopic
+
+  ProdPwcApiLatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm for high latency on prod-pwc-api load balancer
+      AlarmName: ProdPwcApiHighLatencyAlarm
+      ComparisonOperator: GreaterThanThreshold
+      EvaluationPeriods: !Ref EvaluationPeriods
+      MetricName: TargetResponseTime
+      Namespace: AWS/ApplicationELB
+      Period: !Ref Period
+      Statistic: Average
+      Threshold: !Ref AlarmThreshold
+      TreatMissingData: notBreaching
+      Dimensions:
+        - Name: LoadBalancer
+          Value: prod-pwc-api
+      AlarmActions:
+        - !Ref AlarmNotificationTopic
+      OKActions:
+        - !Ref AlarmNotificationTopic
+
+  QaLoadBalancerLatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm for high latency on QAloadbalancer load balancer
+      AlarmName: QaLoadBalancerHighLatencyAlarm
+      ComparisonOperator: GreaterThanThreshold
+      EvaluationPeriods: !Ref EvaluationPeriods
+      MetricName: TargetResponseTime
+      Namespace: AWS/ApplicationELB
+      Period: !Ref Period
+      Statistic: Average
+      Threshold: !Ref AlarmThreshold
+      TreatMissingData: notBreaching
+      Dimensions:
+        - Name: LoadBalancer
+          Value: QAloadbalancer
+      AlarmActions:
+        - !Ref AlarmNotificationTopic
+      OKActions:
+        - !Ref AlarmNotificationTopic
+
+  ReportDevLatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm for high latency on report-dev load balancer
+      AlarmName: ReportDevHighLatencyAlarm
+      ComparisonOperator: GreaterThanThreshold
+      EvaluationPeriods: !Ref EvaluationPeriods
+      MetricName: TargetResponseTime
+      Namespace: AWS/ApplicationELB
+      Period: !Ref Period
+      Statistic: Average
+      Threshold: !Ref AlarmThreshold
+      TreatMissingData: notBreaching
+      Dimensions:
+        - Name: LoadBalancer
+          Value: report-dev
+      AlarmActions:
+        - !Ref AlarmNotificationTopic
+      OKActions:
+        - !Ref AlarmNotificationTopic
+
+  ImportbeLatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm for high latency on importbe load balancer
+      AlarmName: ImportbeHighLatencyAlarm
+      ComparisonOperator: GreaterThanThreshold
+      EvaluationPeriods: !Ref EvaluationPeriods
+      MetricName: TargetResponseTime
+      Namespace: AWS/ApplicationELB
+      Period: !Ref Period
+      Statistic: Average
+      Threshold: !Ref AlarmThreshold
+      TreatMissingData: notBreaching
+      Dimensions:
+        - Name: LoadBalancer
+          Value: importbe
+      AlarmActions:
+        - !Ref AlarmNotificationTopic
+      OKActions:
+        - !Ref AlarmNotificationTopic
+
+  AiStructuredImportLatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm for high latency on ai-structured-import load balancer
+      AlarmName: AiStructuredImportHighLatencyAlarm
+      ComparisonOperator: GreaterThanThreshold
+      EvaluationPeriods: !Ref EvaluationPeriods
+      MetricName: TargetResponseTime
+      Namespace: AWS/ApplicationELB
+      Period: !Ref Period
+      Statistic: Average
+      Threshold: !Ref AlarmThreshold
+      TreatMissingData: notBreaching
+      Dimensions:
+        - Name: LoadBalancer
+          Value: ai-structured-import
+      AlarmActions:
+        - !Ref AlarmNotificationTopic
+      OKActions:
+        - !Ref AlarmNotificationTopic

@@ -1,0 +1,66 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  Demo us-west-2 Postgres
+Parameters:
+  DemoDBAdminUser:
+    Default: pwcdemoadmin
+    NoEcho: 'true'
+    Description: admin user
+    Type: String
+    MinLength: '1'
+    MaxLength: '16'
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: must begin with a letter and contain only alphanumeric characters
+Resources:
+  DemoDbAdminSecret:
+    Type: 'AWS::SecretsManager::Secret'
+    Properties:
+      KmsKeyId: alias/aws/secretsmanager
+      GenerateSecretString:
+        ExcludeLowercase: false
+        ExcludeNumbers: false
+        ExcludePunctuation: false
+        ExcludeUppercase: false
+        PasswordLength: 32
+        ExcludeCharacters: /"@\\
+  DemoDbAppUserSecret:
+    Type: 'AWS::SecretsManager::Secret'
+    Properties:
+      KmsKeyId: alias/aws/secretsmanager
+      GenerateSecretString:
+        ExcludeLowercase: false
+        ExcludeNumbers: false
+        ExcludePunctuation: false
+        ExcludeUppercase: false
+        PasswordLength: 32
+        ExcludeCharacters: /"@\\
+  DemoPgSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Subnet group for demo private vpc subnet azs us-west-2a|b
+      SubnetIds:
+        - subnet-044c7a168f611f884 # Private subnet 1 (us-west-2a)
+        - subnet-0eadc79f52796d341 # Private subnet 2 (us-west-2b)
+  DemoPgDbInstance:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBInstanceClass: db.t3.medium
+      AllocatedStorage: '50'
+      DBName: pwc
+      Engine: postgres
+      EngineVersion: '17.5'
+      MasterUsername: !Ref DemoDBAdminUser
+      MasterUserPassword: 
+        'Fn::Sub': '{{resolve:secretsmanager:${DemoDbAdminSecret}}}'
+      Port: '5432'
+      DBInstanceIdentifier: demo-uw2
+      VPCSecurityGroups: 
+        - sg-0fb997782712f6f4f
+      DBSubnetGroupName: !Ref DemoPgSubnetGroup
+      PubliclyAccessible: false
+      StorageEncrypted: true
+      StorageType: standard
+      BackupRetentionPeriod: 1
+      DeleteAutomatedBackups: true
+      DeletionProtection: false
+      MultiAZ: true

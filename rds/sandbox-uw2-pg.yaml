@@ -1,0 +1,66 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  Sandbox us-west-2 Postgres
+Parameters:
+  SandboxDBAdminUser:
+    Default: pwcsandboxadmin
+    NoEcho: 'true'
+    Description: admin user
+    Type: String
+    MinLength: '1'
+    MaxLength: '16'
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: must begin with a letter and contain only alphanumeric characters
+Resources:
+  SandboxDbAdminSecret:
+    Type: 'AWS::SecretsManager::Secret'
+    Properties:
+      KmsKeyId: alias/aws/secretsmanager
+      GenerateSecretString:
+        ExcludeLowercase: false
+        ExcludeNumbers: false
+        ExcludePunctuation: false
+        ExcludeUppercase: false
+        PasswordLength: 32
+        ExcludeCharacters: /"@\\
+  SandboxDbAppUserSecret:
+    Type: 'AWS::SecretsManager::Secret'
+    Properties:
+      KmsKeyId: alias/aws/secretsmanager
+      GenerateSecretString:
+        ExcludeLowercase: false
+        ExcludeNumbers: false
+        ExcludePunctuation: false
+        ExcludeUppercase: false
+        PasswordLength: 32
+        ExcludeCharacters: /"@\\
+  SandboxPgSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Subnet group for sandbox private vpc subnet azs us-west-2a|b
+      SubnetIds:
+        - subnet-0af0440738b4e3b60 # Private subnet 1 (us-west-2a)
+        - subnet-031340375587583ae # Private subnet 2 (us-west-2b)
+  SandboxPgDbInstance:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBInstanceClass: db.t3.medium
+      AllocatedStorage: '50'
+      DBName: pwc
+      Engine: postgres
+      EngineVersion: '17.5'
+      MasterUsername: !Ref SandboxDBAdminUser
+      MasterUserPassword:
+        'Fn::Sub': '{{resolve:secretsmanager:${SandboxDbAdminSecret}}}'
+      Port: '5432'
+      DBInstanceIdentifier: sandbox-uw2
+      VPCSecurityGroups:
+        - sg-08b6bb8de59b27199
+      DBSubnetGroupName: !Ref SandboxPgSubnetGroup
+      PubliclyAccessible: false
+      StorageEncrypted: true
+      StorageType: standard
+      BackupRetentionPeriod: 1
+      DeleteAutomatedBackups: true
+      DeletionProtection: false
+      MultiAZ: true

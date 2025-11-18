@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Starter user used with the create_user.sh script.'
+Resources:
+  asaudagarPwSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: asaudagarPwSecret
+      Description: 'This secret has a dynamically generated secret password.'
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "asaudagar"}'
+        GenerateStringKey: password
+        PasswordLength: 30
+        ExcludeCharacters: '"@/\'
+  asaudagar:
+    Type: AWS::IAM::User
+    DependsOn:
+      - asaudagarPwSecret
+    Properties:
+      UserName: '{{resolve:secretsmanager:asaudagarPwSecret:SecretString:username:AWSCURRENT}}'
+      LoginProfile:
+        Password: '{{resolve:secretsmanager:asaudagarPwSecret:SecretString:password:AWSCURRENT}}'
+        PasswordResetRequired: false
+      Groups:
+        - IamAndMfa
+        - Developers
+        - ImportLambdaDevelopers
+        - Mastec
+        - Sagemaker
+  asaudagarAccessKey:
+    Type: AWS::IAM::AccessKey
+    DependsOn:
+      - asaudagar
+    Properties:
+      UserName: !Ref asaudagar
+      Status: Active
+  asaudagarAccessKeySecret:
+    Type: AWS::SecretsManager::Secret
+    DependsOn:
+      - asaudagar
+    Properties:
+      Name: asaudagarAccessKeySecret
+      Description: Secret for asaudagar IAM access key
+      SecretString: !Sub '{"asaudagarAccessKeyId":"${asaudagarAccessKey}","asaudagarSecretAccessKey":"${asaudagarAccessKey.SecretAccessKey}"}'

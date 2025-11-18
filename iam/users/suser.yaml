@@ -1,0 +1,39 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Starter user used with the create_user.sh script.'
+Resources:
+  suserPwSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: suserPwSecret
+      Description: 'This secret has a dynamically generated secret password.'
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "suser"}'
+        GenerateStringKey: password
+        PasswordLength: 30
+        ExcludeCharacters: '"@/\'
+  suser:
+    Type: AWS::IAM::User
+    DependsOn:
+      - suserPwSecret
+    Properties:
+      UserName: '{{resolve:secretsmanager:suserPwSecret:SecretString:username:AWSCURRENT}}'
+      LoginProfile:
+        Password: '{{resolve:secretsmanager:suserPwSecret:SecretString:password:AWSCURRENT}}'
+        PasswordResetRequired: false
+      Groups:
+        - IamAndMfa
+  suserAccessKey:
+    Type: AWS::IAM::AccessKey
+    DependsOn:
+      - suser
+    Properties:
+      UserName: !Ref suser
+      Status: Active
+  suserAccessKeySecret:
+    Type: AWS::SecretsManager::Secret
+    DependsOn:
+      - suser
+    Properties:
+      Name: suserAccessKeySecret
+      Description: Secret for suser IAM access key
+      SecretString: !Sub '{"suserAccessKeyId":"${suserAccessKey}","suserSecretAccessKey":"${suserAccessKey.SecretAccessKey}"}'

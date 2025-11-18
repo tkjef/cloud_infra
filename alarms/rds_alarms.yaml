@@ -1,0 +1,204 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template to create CloudWatch alarms for RDS free storage space'
+
+Parameters:
+  AlarmNotificationEmail:
+    Type: String
+    Description: Email address to receive alarm notifications
+    Default: devops@proscore.ai
+  
+  LowStorageThreshold:
+    Type: Number
+    Description: Threshold in bytes for low storage space alert
+    Default: 10737418240  # 10 GB in bytes
+    
+  EvaluationPeriods:
+    Type: Number
+    Description: Number of periods to evaluate the alarm
+    Default: 3
+    
+  Period:
+    Type: Number
+    Description: Period in seconds for each evaluation
+    Default: 300  # 5 minutes
+
+Resources:
+  RDSAlarmTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: RDS Storage Alarms
+      TopicName: RDSStorageAlarms
+      
+  RDSAlarmSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Protocol: email
+      Endpoint: !Ref AlarmNotificationEmail
+      TopicArn: !Ref RDSAlarmTopic
+  SandboxFreeStorageAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: sandbox-low-free-storage-space
+      AlarmDescription: Alarm when free storage space is low for sandbox RDS instance
+      MetricName: FreeStorageSpace
+      Namespace: AWS/RDS
+      Statistic: Average
+      Dimensions:
+        - Name: DBInstanceIdentifier
+          Value: sandbox
+      Period: !Ref Period
+      EvaluationPeriods: !Ref EvaluationPeriods
+      Threshold: !Ref LowStorageThreshold
+      ComparisonOperator: LessThanThreshold
+      AlarmActions:
+        - !Ref RDSAlarmTopic
+      InsufficientDataActions:
+        - !Ref RDSAlarmTopic
+      TreatMissingData: breaching
+
+  SandboxInternalFreeStorageAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: sandboxinternal-low-free-storage-space
+      AlarmDescription: Alarm when free storage space is low for sandboxinternal RDS instance
+      MetricName: FreeStorageSpace
+      Namespace: AWS/RDS
+      Statistic: Average
+      Dimensions:
+        - Name: DBInstanceIdentifier
+          Value: sandboxinternal
+      Period: !Ref Period
+      EvaluationPeriods: !Ref EvaluationPeriods
+      Threshold: !Ref LowStorageThreshold
+      ComparisonOperator: LessThanThreshold
+      AlarmActions:
+        - !Ref RDSAlarmTopic
+      InsufficientDataActions:
+        - !Ref RDSAlarmTopic
+      TreatMissingData: breaching
+
+  ProdUw2FreeStorageAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: prod-uw2-low-free-storage-space
+      AlarmDescription: Alarm when free storage space is low for prod-uw2 RDS instance
+      MetricName: FreeStorageSpace
+      Namespace: AWS/RDS
+      Statistic: Average
+      Dimensions:
+        - Name: DBInstanceIdentifier
+          Value: prod-uw2
+      Period: !Ref Period
+      EvaluationPeriods: !Ref EvaluationPeriods
+      Threshold: !Ref LowStorageThreshold
+      ComparisonOperator: LessThanThreshold
+      AlarmActions:
+        - !Ref RDSAlarmTopic
+      InsufficientDataActions:
+        - !Ref RDSAlarmTopic
+      TreatMissingData: breaching
+
+  DemoUw2FreeStorageAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: demo-uw2-low-free-storage-space
+      AlarmDescription: Alarm when free storage space is low for demo-uw2 RDS instance
+      MetricName: FreeStorageSpace
+      Namespace: AWS/RDS
+      Statistic: Average
+      Dimensions:
+        - Name: DBInstanceIdentifier
+          Value: demo-uw2
+      Period: !Ref Period
+      EvaluationPeriods: !Ref EvaluationPeriods
+      Threshold: !Ref LowStorageThreshold
+      ComparisonOperator: LessThanThreshold
+      AlarmActions:
+        - !Ref RDSAlarmTopic
+      InsufficientDataActions:
+        - !Ref RDSAlarmTopic
+      TreatMissingData: breaching
+
+  DevUw2FreeStorageAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: dev-uw2-pg-low-free-storage-space
+      AlarmDescription: Alarm when free storage space is low for dev-uw2 Postgres RDS instance
+      MetricName: FreeStorageSpace
+      Namespace: AWS/RDS
+      Statistic: Average
+      Dimensions:
+        - Name: DBInstanceIdentifier
+          Value: dev-uw2-pg
+      Period: !Ref Period
+      EvaluationPeriods: !Ref EvaluationPeriods
+      Threshold: !Ref LowStorageThreshold
+      ComparisonOperator: LessThanThreshold
+      AlarmActions:
+        - !Ref RDSAlarmTopic
+      InsufficientDataActions:
+        - !Ref RDSAlarmTopic
+      TreatMissingData: breaching
+
+  SandboxUw2FreeStorageAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: sandbox-uw2-low-free-storage-space
+      AlarmDescription: Alarm when free storage space is low for sandbox-uw2 RDS instance
+      MetricName: FreeStorageSpace
+      Namespace: AWS/RDS
+      Statistic: Average
+      Dimensions:
+        - Name: DBInstanceIdentifier
+          Value: sandbox-uw2
+      Period: !Ref Period
+      EvaluationPeriods: !Ref EvaluationPeriods
+      Threshold: !Ref LowStorageThreshold
+      ComparisonOperator: LessThanThreshold
+      AlarmActions:
+        - !Ref RDSAlarmTopic
+      InsufficientDataActions:
+        - !Ref RDSAlarmTopic
+      TreatMissingData: breaching
+
+  MossSandboxFreeStorageAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: moss-sandbox-low-free-storage-space
+      AlarmDescription: Alarm when free storage space is low for moss-sandbox RDS instance
+      MetricName: FreeStorageSpace
+      Namespace: AWS/RDS
+      Statistic: Average
+      Dimensions:
+        - Name: DBInstanceIdentifier
+          Value: mosssandbox
+      Period: !Ref Period
+      EvaluationPeriods: !Ref EvaluationPeriods
+      Threshold: !Ref LowStorageThreshold
+      ComparisonOperator: LessThanThreshold
+      AlarmActions:
+        - !Ref RDSAlarmTopic
+      InsufficientDataActions:
+        - !Ref RDSAlarmTopic
+      TreatMissingData: breaching
+
+  ParseServerSandboxFreeStorageAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: parse-server-sandbox-uw2-free-storage-space-alarm
+      AlarmDescription: Alarm when free storage space is low for parse-server-sandbox-uw2 RDS instance
+      MetricName: FreeStorageSpace
+      Namespace: AWS/RDS
+      Statistic: Average
+      Dimensions:
+        - Name: DBInstanceIdentifier
+          Value: parse-server-sandbox-uw2
+      Period: !Ref Period
+      EvaluationPeriods: !Ref EvaluationPeriods
+      Threshold: !Ref LowStorageThreshold
+      ComparisonOperator: LessThanThreshold
+      AlarmActions:
+        - !Ref RDSAlarmTopic
+      InsufficientDataActions:
+        - !Ref RDSAlarmTopic
+      TreatMissingData: breaching

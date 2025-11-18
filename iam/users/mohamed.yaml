@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Starter user used with the create_user.sh script.'
+Resources:
+  mohamedPwSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: mohamedPwSecret
+      Description: 'This secret has a dynamically generated secret password.'
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "mohamed"}'
+        GenerateStringKey: password
+        PasswordLength: 30
+        ExcludeCharacters: '"@/\'
+  mohamed:
+    Type: AWS::IAM::User
+    DependsOn:
+      - mohamedPwSecret
+    Properties:
+      UserName: '{{resolve:secretsmanager:mohamedPwSecret:SecretString:username:AWSCURRENT}}'
+      LoginProfile:
+        Password: '{{resolve:secretsmanager:mohamedPwSecret:SecretString:password:AWSCURRENT}}'
+        PasswordResetRequired: false
+      ManagedPolicyArns:
+        - arn:aws:iam::638891785980:policy/Mohamed
+      Groups:
+        - IamAndMfa
+  mohamedAccessKey:
+    Type: AWS::IAM::AccessKey
+    DependsOn:
+      - mohamed
+    Properties:
+      UserName: !Ref mohamed
+      Status: Active
+  mohamedAccessKeySecret:
+    Type: AWS::SecretsManager::Secret
+    DependsOn:
+      - mohamed
+    Properties:
+      Name: mohamedAccessKeySecret
+      Description: Secret for mohamed IAM access key
+      SecretString: !Sub '{"mohamedAccessKeyId":"${mohamedAccessKey}","mohamedSecretAccessKey":"${mohamedAccessKey.SecretAccessKey}"}'

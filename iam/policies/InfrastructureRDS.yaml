@@ -1,0 +1,24 @@
+Resources:
+  DBSubnetGroupsPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: InfrastructureRDSPolicy
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - rds:CreateDBSubnetGroup
+              - rds:DescribeDBSubnetGroups
+              - rds:DeleteDBSubnetGroup
+              - rds:CreateDBInstance
+              - rds:DescribeDBInstance
+              - rds:DeleteDBInstance
+            Resource: '*'
+      # Attach the policy to a specific IAM role (replace 'YourRoleName' with the actual role)
+      Users:
+        - awsiamrepo
+
+# Alternatively, to attach to a group, use:
+#      Groups:
+#        - YourGroupName   

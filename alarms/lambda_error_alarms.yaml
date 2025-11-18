@@ -1,0 +1,139 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template to create CloudWatch alarms for Lambda function error metrics'
+
+Parameters:
+  AlarmNotificationEmail:
+    Type: String
+    Description: Email address to receive alarm notifications
+    Default: devops@proscore.ai
+  ErrorThreshold:
+    Type: Number
+    Description: Threshold for Lambda function errors
+    Default: 1
+  EvaluationPeriods:
+    Type: Number
+    Description: Number of periods to evaluate the alarm
+    Default: 1
+  Period:
+    Type: Number
+    Description: Period in seconds to evaluate the metric
+    Default: 300
+
+Resources:
+  LambdaErrorAlarmTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: Lambda Error Alarm Notifications
+      TopicName: lambda-error-alarms
+
+  LambdaErrorAlarmSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Protocol: email
+      Endpoint: !Ref AlarmNotificationEmail
+      TopicArn: !Ref LambdaErrorAlarmTopic
+
+  EmployeeImportMossProdErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: employee-import-moss-prod-error-alarm
+      AlarmDescription: Alarm for employee-import-moss-prod Lambda function errors
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Dimensions:
+        - Name: FunctionName
+          Value: employee-import-moss-prod
+      Statistic: Sum
+      Period: !Ref Period
+      EvaluationPeriods: !Ref EvaluationPeriods
+      Threshold: !Ref ErrorThreshold
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref LambdaErrorAlarmTopic
+      OKActions:
+        - !Ref LambdaErrorAlarmTopic
+
+  EmployeeImportErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: employee-import-error-alarm
+      AlarmDescription: Alarm for employee-import Lambda function errors
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Dimensions:
+        - Name: FunctionName
+          Value: employee-import
+      Statistic: Sum
+      Period: !Ref Period
+      EvaluationPeriods: !Ref EvaluationPeriods
+      Threshold: !Ref ErrorThreshold
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref LambdaErrorAlarmTopic
+      OKActions:
+        - !Ref LambdaErrorAlarmTopic
+
+  PayrollSummaryImportAdpErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: payroll-summary-import-adp-error-alarm
+      AlarmDescription: Alarm for payroll-summary-import-adp Lambda function errors
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Dimensions:
+        - Name: FunctionName
+          Value: payroll-summary-import-adp
+      Statistic: Sum
+      Period: !Ref Period
+      EvaluationPeriods: !Ref EvaluationPeriods
+      Threshold: !Ref ErrorThreshold
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref LambdaErrorAlarmTopic
+      OKActions:
+        - !Ref LambdaErrorAlarmTopic
+
+  RtiMossProdErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: rti-moss-prod-error-alarm
+      AlarmDescription: Alarm for rti-moss-prod Lambda function errors
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Dimensions:
+        - Name: FunctionName
+          Value: rti-moss-prod
+      Statistic: Sum
+      Period: !Ref Period
+      EvaluationPeriods: !Ref EvaluationPeriods
+      Threshold: !Ref ErrorThreshold
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref LambdaErrorAlarmTopic
+      OKActions:
+        - !Ref LambdaErrorAlarmTopic
+
+  PrimorisSftpErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: primorisSftp-error-alarm
+      AlarmDescription: Alarm for primorisSftp Lambda function errors
+      MetricName: Errors
+      Namespace: AWS/Lambda
+      Dimensions:
+        - Name: FunctionName
+          Value: primorisSftp
+      Statistic: Sum
+      Period: !Ref Period
+      EvaluationPeriods: !Ref EvaluationPeriods
+      Threshold: !Ref ErrorThreshold
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref LambdaErrorAlarmTopic
+      OKActions:
+        - !Ref LambdaErrorAlarmTopic

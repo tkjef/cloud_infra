@@ -1,0 +1,561 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template to create CPU utilization alarms for EC2 instances'
+
+Parameters:
+  AlarmNotificationEmail:
+    Type: String
+    Description: Email address to receive alarm notifications
+    Default: devops@proscore.ai
+  CPUAlarmThreshold:
+    Type: Number
+    Default: 80
+    Description: The threshold percentage for CPU utilization alarm
+  AlarmEvaluationPeriods:
+    Type: Number
+    Default: 2
+    Description: The number of periods over which data is compared to the threshold
+  AlarmPeriod:
+    Type: Number
+    Default: 300
+    Description: The period in seconds over which the statistic is applied
+
+Resources:
+  CPUAlarmTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: EC2 CPU Alarm Topic
+      Subscription:
+        - Protocol: email
+          Endpoint: !Ref AlarmNotificationEmail
+
+  ProscoreLLMServerCPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm when CPU exceeds threshold for proscore-llm-server
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: !Ref AlarmPeriod
+      EvaluationPeriods: !Ref AlarmEvaluationPeriods
+      Threshold: !Ref CPUAlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: i-0b9916524ae9a3281
+      AlarmActions:
+        - !Ref CPUAlarmTopic
+      InsufficientDataActions:
+        - !Ref CPUAlarmTopic
+
+  ProscoreLLMServer2CPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm when CPU exceeds threshold for proscore-llm-server2
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: !Ref AlarmPeriod
+      EvaluationPeriods: !Ref AlarmEvaluationPeriods
+      Threshold: !Ref CPUAlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: i-021fd8a32f9d437ac
+      AlarmActions:
+        - !Ref CPUAlarmTopic
+      InsufficientDataActions:
+        - !Ref CPUAlarmTopic
+
+  DevPortalApiCPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm when CPU exceeds threshold for dev-portal-api
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: !Ref AlarmPeriod
+      EvaluationPeriods: !Ref AlarmEvaluationPeriods
+      Threshold: !Ref CPUAlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: i-06330fda5b5529eab
+      AlarmActions:
+        - !Ref CPUAlarmTopic
+      InsufficientDataActions:
+        - !Ref CPUAlarmTopic
+
+  DevAdminPortalCPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm when CPU exceeds threshold for dev-admin-portal
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: !Ref AlarmPeriod
+      EvaluationPeriods: !Ref AlarmEvaluationPeriods
+      Threshold: !Ref CPUAlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: i-01bf8b87d14cdcd63
+      AlarmActions:
+        - !Ref CPUAlarmTopic
+      InsufficientDataActions:
+        - !Ref CPUAlarmTopic
+
+  DevSqlCPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm when CPU exceeds threshold for dev-sql
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: !Ref AlarmPeriod
+      EvaluationPeriods: !Ref AlarmEvaluationPeriods
+      Threshold: !Ref CPUAlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: i-094f594815aa1fa42
+      AlarmActions:
+        - !Ref CPUAlarmTopic
+      InsufficientDataActions:
+        - !Ref CPUAlarmTopic
+
+  DevPortalCPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm when CPU exceeds threshold for dev-portal
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: !Ref AlarmPeriod
+      EvaluationPeriods: !Ref AlarmEvaluationPeriods
+      Threshold: !Ref CPUAlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: i-02a0c34100ae08a44
+      AlarmActions:
+        - !Ref CPUAlarmTopic
+      InsufficientDataActions:
+        - !Ref CPUAlarmTopic
+
+  DevPwcSamExtractionCPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm when CPU exceeds threshold for dev-pwc-sam-extraction
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: !Ref AlarmPeriod
+      EvaluationPeriods: !Ref AlarmEvaluationPeriods
+      Threshold: !Ref CPUAlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: i-0bab0279ecaa0f383
+      AlarmActions:
+        - !Ref CPUAlarmTopic
+      InsufficientDataActions:
+        - !Ref CPUAlarmTopic
+
+  DevPwcApiCPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm when CPU exceeds threshold for dev-pwc-api
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: !Ref AlarmPeriod
+      EvaluationPeriods: !Ref AlarmEvaluationPeriods
+      Threshold: !Ref CPUAlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: i-0ce4301d8e089d921
+      AlarmActions:
+        - !Ref CPUAlarmTopic
+      InsufficientDataActions:
+        - !Ref CPUAlarmTopic
+
+  ProdPwcApiCPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm when CPU exceeds threshold for prod-pwc-api
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: !Ref AlarmPeriod
+      EvaluationPeriods: !Ref AlarmEvaluationPeriods
+      Threshold: !Ref CPUAlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: i-0345668207175c730
+      AlarmActions:
+        - !Ref CPUAlarmTopic
+      InsufficientDataActions:
+        - !Ref CPUAlarmTopic
+
+  ProdPwcApiCPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm when CPU exceeds threshold for prod-pwc-api
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: !Ref AlarmPeriod
+      EvaluationPeriods: !Ref AlarmEvaluationPeriods
+      Threshold: !Ref CPUAlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: i-0345668207175c730
+      AlarmActions:
+        - !Ref CPUAlarmTopic
+      InsufficientDataActions:
+        - !Ref CPUAlarmTopic
+
+  ProdElasticsearchCPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm when CPU exceeds threshold for prod-elasticsearch
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: !Ref AlarmPeriod
+      EvaluationPeriods: !Ref AlarmEvaluationPeriods
+      Threshold: !Ref CPUAlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: i-05b8ddc7ca88e2faf
+      AlarmActions:
+        - !Ref CPUAlarmTopic
+      InsufficientDataActions:
+        - !Ref CPUAlarmTopic
+
+  PrdOpenVpnDrCPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm when CPU exceeds threshold for PRD-Open-VPN-DR
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: !Ref AlarmPeriod
+      EvaluationPeriods: !Ref AlarmEvaluationPeriods
+      Threshold: !Ref CPUAlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: i-02654ec5cde7e3e46
+      AlarmActions:
+        - !Ref CPUAlarmTopic
+      InsufficientDataActions:
+        - !Ref CPUAlarmTopic
+
+  PrdOpenVpnDcCPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm when CPU exceeds threshold for PRD-Open-VPN-DC
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: !Ref AlarmPeriod
+      EvaluationPeriods: !Ref AlarmEvaluationPeriods
+      Threshold: !Ref CPUAlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: i-02c9139d4cd737d8f
+      AlarmActions:
+        - !Ref CPUAlarmTopic
+      InsufficientDataActions:
+        - !Ref CPUAlarmTopic
+
+  ProscoreJenkinsCPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm when CPU exceeds threshold for proscore-jenkins
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: !Ref AlarmPeriod
+      EvaluationPeriods: !Ref AlarmEvaluationPeriods
+      Threshold: !Ref CPUAlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: i-067fcafc41fa22655
+      AlarmActions:
+        - !Ref CPUAlarmTopic
+      InsufficientDataActions:
+        - !Ref CPUAlarmTopic
+
+  ProdPwcCPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm when CPU exceeds threshold for prod-pwc
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: !Ref AlarmPeriod
+      EvaluationPeriods: !Ref AlarmEvaluationPeriods
+      Threshold: !Ref CPUAlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: i-0547de6be50b340ec
+      AlarmActions:
+        - !Ref CPUAlarmTopic
+      InsufficientDataActions:
+        - !Ref CPUAlarmTopic
+
+  ProdAdminPortalCPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm when CPU exceeds threshold for prod-admin-portal
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: !Ref AlarmPeriod
+      EvaluationPeriods: !Ref AlarmEvaluationPeriods
+      Threshold: !Ref CPUAlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: i-018838bd69caa37da
+      AlarmActions:
+        - !Ref CPUAlarmTopic
+      InsufficientDataActions:
+        - !Ref CPUAlarmTopic
+
+  ProdRedisCPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm when CPU exceeds threshold for prod-redis
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: !Ref AlarmPeriod
+      EvaluationPeriods: !Ref AlarmEvaluationPeriods
+      Threshold: !Ref CPUAlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: i-0db1d928bdbed41d4
+      AlarmActions:
+        - !Ref CPUAlarmTopic
+      InsufficientDataActions:
+        - !Ref CPUAlarmTopic
+
+  ProdProscoreElasticsearchCPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm when CPU exceeds threshold for prod-proscore-Elasticsearch
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: !Ref AlarmPeriod
+      EvaluationPeriods: !Ref AlarmEvaluationPeriods
+      Threshold: !Ref CPUAlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: i-0f93f0b18a4a3be3f
+      AlarmActions:
+        - !Ref CPUAlarmTopic
+      InsufficientDataActions:
+        - !Ref CPUAlarmTopic
+
+  DevRedisCPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm when CPU exceeds threshold for dev-redis
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: !Ref AlarmPeriod
+      EvaluationPeriods: !Ref AlarmEvaluationPeriods
+      Threshold: !Ref CPUAlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: i-0d91a76eebe992055
+      AlarmActions:
+        - !Ref CPUAlarmTopic
+      InsufficientDataActions:
+        - !Ref CPUAlarmTopic
+
+  ProdPortalCPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm when CPU exceeds threshold for prod-portal
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: !Ref AlarmPeriod
+      EvaluationPeriods: !Ref AlarmEvaluationPeriods
+      Threshold: !Ref CPUAlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: i-013a4b226978a50ae
+      AlarmActions:
+        - !Ref CPUAlarmTopic
+      InsufficientDataActions:
+        - !Ref CPUAlarmTopic
+
+  ProdPortalApiCPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm when CPU exceeds threshold for prod-portal-api
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: !Ref AlarmPeriod
+      EvaluationPeriods: !Ref AlarmEvaluationPeriods
+      Threshold: !Ref CPUAlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: i-0831dc9e5b080e6e9
+      AlarmActions:
+        - !Ref CPUAlarmTopic
+      InsufficientDataActions:
+        - !Ref CPUAlarmTopic
+
+  DevElasticsearchCPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm when CPU exceeds threshold for dev-elasticsearch
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: !Ref AlarmPeriod
+      EvaluationPeriods: !Ref AlarmEvaluationPeriods
+      Threshold: !Ref CPUAlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: i-053c6cd6d3acd10ed
+      AlarmActions:
+        - !Ref CPUAlarmTopic
+      InsufficientDataActions:
+        - !Ref CPUAlarmTopic
+
+  ProdSql01CPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm when CPU exceeds threshold for prod-sql-01
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: !Ref AlarmPeriod
+      EvaluationPeriods: !Ref AlarmEvaluationPeriods
+      Threshold: !Ref CPUAlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: i-0df8de4cde2512665
+      AlarmActions:
+        - !Ref CPUAlarmTopic
+      InsufficientDataActions:
+        - !Ref CPUAlarmTopic
+
+  DemoSqlCPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm when CPU exceeds threshold for demo-sql
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: !Ref AlarmPeriod
+      EvaluationPeriods: !Ref AlarmEvaluationPeriods
+      Threshold: !Ref CPUAlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: i-07a4eac3161fb7d41
+      AlarmActions:
+        - !Ref CPUAlarmTopic
+      InsufficientDataActions:
+        - !Ref CPUAlarmTopic
+
+  DevUw2GpuCPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm when CPU exceeds threshold for dev-uw2-gpu
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: !Ref AlarmPeriod
+      EvaluationPeriods: !Ref AlarmEvaluationPeriods
+      Threshold: !Ref CPUAlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: i-0da7660a95b9d3b04
+      AlarmActions:
+        - !Ref CPUAlarmTopic
+      InsufficientDataActions:
+        - !Ref CPUAlarmTopic
+
+  DevUw2CPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm when CPU exceeds threshold for dev-uw2
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: !Ref AlarmPeriod
+      EvaluationPeriods: !Ref AlarmEvaluationPeriods
+      Threshold: !Ref CPUAlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: i-08ae0a5633b961b60
+      AlarmActions:
+        - !Ref CPUAlarmTopic
+      InsufficientDataActions:
+        - !Ref CPUAlarmTopic
+
+  MossSandboxCPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm when CPU exceeds threshold for mosssandbox
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: !Ref AlarmPeriod
+      EvaluationPeriods: !Ref AlarmEvaluationPeriods
+      Threshold: !Ref CPUAlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: i-0016d430fbcfa02ed
+      AlarmActions:
+        - !Ref CPUAlarmTopic
+      InsufficientDataActions:
+        - !Ref CPUAlarmTopic
+
+  DevUw2CPUAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: Alarm when CPU exceeds threshold for dev-uw2
+      MetricName: CPUUtilization
+      Namespace: AWS/EC2
+      Statistic: Average
+      Period: !Ref AlarmPeriod
+      EvaluationPeriods: !Ref AlarmEvaluationPeriods
+      Threshold: !Ref CPUAlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: InstanceId
+          Value: i-04d47d607128c83f6
+      AlarmActions:
+        - !Ref CPUAlarmTopic
+      InsufficientDataActions:
+        - !Ref CPUAlarmTopic

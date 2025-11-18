@@ -1,0 +1,68 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  Prod us-west-2 Postgres
+Parameters:
+  DBAdminUser:
+    Default: pwcadmin
+    NoEcho: 'true'
+    Description: admin user
+    Type: String
+    MinLength: '1'
+    MaxLength: '16'
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: must begin with a letter and contain only alphanumeric characters
+Resources:
+  DbAdminSecret:
+    Type: 'AWS::SecretsManager::Secret'
+    Properties:
+      KmsKeyId: alias/aws/secretsmanager
+      GenerateSecretString:
+        ExcludeLowercase: false
+        ExcludeNumbers: false
+        ExcludePunctuation: false
+        ExcludeUppercase: false
+        PasswordLength: 32
+        ExcludeCharacters: /"@\\
+  DbAppUserSecret:
+    Type: 'AWS::SecretsManager::Secret'
+    Properties:
+      KmsKeyId: alias/aws/secretsmanager
+      GenerateSecretString:
+        ExcludeLowercase: false
+        ExcludeNumbers: false
+        ExcludePunctuation: false
+        ExcludeUppercase: false
+        PasswordLength: 32
+        ExcludeCharacters: /"@\\
+  PgSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Subnet group for prod private vpc subnet azs us-west-2a|b
+      SubnetIds:
+        - subnet-0af0440738b4e3b60 # Private subnet 1 (us-west-2a)
+        - subnet-031340375587583ae # Private subnet 2 (us-west-2b)
+        - subnet-08d5064fd817566a5 # Private subnet 3 (us-west-2a)
+        - subnet-0dba54d190f7bb6d1 # Private subnet 4 (us-west-2b)
+  PgDbInstance:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBInstanceClass: db.t3.medium
+      AllocatedStorage: '50'
+      DBName: pwc
+      Engine: postgres
+      EngineVersion: '17.5'
+      MasterUsername: !Ref DBAdminUser
+      MasterUserPassword: 
+        'Fn::Sub': '{{resolve:secretsmanager:${DbAdminSecret}}}'
+      Port: '5432'
+      DBInstanceIdentifier: prod-uw2
+      VPCSecurityGroups: 
+        - sg-08b6bb8de59b27199
+      DBSubnetGroupName: !Ref PgSubnetGroup
+      PubliclyAccessible: false
+      StorageEncrypted: true
+      StorageType: standard
+      BackupRetentionPeriod: 1
+      DeleteAutomatedBackups: true
+      DeletionProtection: false
+      MultiAZ: true

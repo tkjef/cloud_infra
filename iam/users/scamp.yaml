@@ -1,0 +1,42 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Starter user used with the create_user.sh script.'
+Resources:
+  scampPwSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: scampPwSecret
+      Description: 'This secret has a dynamically generated secret password.'
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "scamp"}'
+        GenerateStringKey: password
+        PasswordLength: 30
+        ExcludeCharacters: '"@/\'
+  scamp:
+    Type: AWS::IAM::User
+    DependsOn:
+      - scampPwSecret
+    Properties:
+      UserName: '{{resolve:secretsmanager:scampPwSecret:SecretString:username:AWSCURRENT}}'
+      LoginProfile:
+        Password: '{{resolve:secretsmanager:scampPwSecret:SecretString:password:AWSCURRENT}}'
+        PasswordResetRequired: false
+      Groups:
+        - IamAndMfa
+        - Developers
+        - StepFunctions
+        - S3Access
+  scampAccessKey:
+    Type: AWS::IAM::AccessKey
+    DependsOn:
+      - scamp
+    Properties:
+      UserName: !Ref scamp
+      Status: Active
+  scampAccessKeySecret:
+    Type: AWS::SecretsManager::Secret
+    DependsOn:
+      - scamp
+    Properties:
+      Name: scampAccessKeySecret
+      Description: Secret for scamp IAM access key
+      SecretString: !Sub '{"scampAccessKeyId":"${scampAccessKey}","scampSecretAccessKey":"${scampAccessKey.SecretAccessKey}"}'

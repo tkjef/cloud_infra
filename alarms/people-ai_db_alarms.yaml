@@ -1,0 +1,67 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template to create CloudWatch alarms for RDS free storage space'
+
+Parameters:
+  DBInstanceIdentifier1:
+    Type: String
+    Default: people-ai-instance-1
+    Description: The identifier of the first RDS instance
+  
+  DBInstanceIdentifier2:
+    Type: String
+    Default: people-ai-instance-1-us-west-2d
+    Description: The identifier of the second RDS instance
+  
+  AlarmThreshold:
+    Type: Number
+    Default: 10737418240  # 10 GB in bytes
+    Description: The threshold in bytes below which the alarm will trigger
+  
+  SNSTopicArn:
+    Type: String
+    Description: The ARN of the SNS topic to notify when the alarm triggers
+    Default: ''
+
+Conditions:
+  HasSNSTopic: !Not [!Equals [!Ref SNSTopicArn, '']]
+
+Resources:
+  RDSFreeStorageAlarm1:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${DBInstanceIdentifier1}-low-free-storage-space'
+      AlarmDescription: !Sub 'Alarm when free storage space for ${DBInstanceIdentifier1} falls below threshold'
+      MetricName: FreeStorageSpace
+      Namespace: AWS/RDS
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: !Ref AlarmThreshold
+      ComparisonOperator: LessThanThreshold
+      TreatMissingData: missing
+      Dimensions:
+        - Name: DBInstanceIdentifier
+          Value: !Ref DBInstanceIdentifier1
+      AlarmActions: !If [HasSNSTopic, [!Ref SNSTopicArn], !Ref 'AWS::NoValue']
+      InsufficientDataActions: !If [HasSNSTopic, [!Ref SNSTopicArn], !Ref 'AWS::NoValue']
+      OKActions: !If [HasSNSTopic, [!Ref SNSTopicArn], !Ref 'AWS::NoValue']
+
+  RDSFreeStorageAlarm2:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${DBInstanceIdentifier2}-low-free-storage-space'
+      AlarmDescription: !Sub 'Alarm when free storage space for ${DBInstanceIdentifier2} falls below threshold'
+      MetricName: FreeStorageSpace
+      Namespace: AWS/RDS
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: !Ref AlarmThreshold
+      ComparisonOperator: LessThanThreshold
+      TreatMissingData: missing
+      Dimensions:
+        - Name: DBInstanceIdentifier
+          Value: !Ref DBInstanceIdentifier2
+      AlarmActions: !If [HasSNSTopic, [!Ref SNSTopicArn], !Ref 'AWS::NoValue']
+      InsufficientDataActions: !If [HasSNSTopic, [!Ref SNSTopicArn], !Ref 'AWS::NoValue']
+      OKActions: !If [HasSNSTopic, [!Ref SNSTopicArn], !Ref 'AWS::NoValue']

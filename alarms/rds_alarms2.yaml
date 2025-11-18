@@ -1,0 +1,84 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template to create CloudWatch alarms for RDS free storage space'
+
+Parameters:
+  AlarmThreshold:
+    Type: Number
+    Default: 10737418240  # 10GB in bytes
+    Description: The threshold in bytes below which the alarm will trigger
+  
+  AlarmEvaluationPeriods:
+    Type: Number
+    Default: 1
+    Description: The number of periods over which data is compared to the threshold
+  
+  AlarmPeriod:
+    Type: Number
+    Default: 300
+    Description: The period in seconds over which the statistic is applied
+  
+  SNSTopicArn:
+    Type: String
+    Description: ARN of the SNS Topic for alarm notifications
+
+Resources:
+  # Alarm for dev-uw2 RDS instance
+  DevUw2FreeStorageSpaceAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: dev-uw2-free-storage-space-alarm
+      AlarmDescription: Alarm when free storage space falls below threshold
+      MetricName: FreeStorageSpace
+      Namespace: AWS/RDS
+      Statistic: Average
+      Period: !Ref AlarmPeriod
+      EvaluationPeriods: !Ref AlarmEvaluationPeriods
+      Threshold: !Ref AlarmThreshold
+      ComparisonOperator: LessThanThreshold
+      Dimensions:
+        - Name: DBInstanceIdentifier
+          Value: dev-uw2
+      AlarmActions:
+        - !Ref SNSTopicArn
+      InsufficientDataActions:
+        - !Ref SNSTopicArn
+      OKActions:
+        - !Ref SNSTopicArn
+
+  # Alarm for parse-server-sandbox-uw2 RDS instance
+  ParseServerSandboxUw2FreeStorageSpaceAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: parse-server-sandbox-uw2-free-storage-space-alarm
+      AlarmDescription: Alarm when free storage space falls below threshold
+      MetricName: FreeStorageSpace
+      Namespace: AWS/RDS
+      Statistic: Average
+      Period: !Ref AlarmPeriod
+      EvaluationPeriods: !Ref AlarmEvaluationPeriods
+      Threshold: !Ref AlarmThreshold
+      ComparisonOperator: LessThanThreshold
+      Dimensions:
+        - Name: DBInstanceIdentifier
+          Value: parse-server-sandbox-uw2
+      AlarmActions:
+        - !Ref SNSTopicArn
+      InsufficientDataActions:
+        - !Ref SNSTopicArn
+      OKActions:
+        - !Ref SNSTopicArn
+
+# Optional: Create an SNS Topic if you don't already have one
+  RDSAlarmSNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: RDS Storage Alarms
+      TopicName: rds-storage-alarms
+
+  # Optional: Create an email subscription to the SNS Topic
+  RDSAlarmSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Protocol: email
+      Endpoint: devops@proscore.ai
+      TopicArn: !Ref RDSAlarmSNSTopic

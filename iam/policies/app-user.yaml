@@ -1,0 +1,20 @@
+Resources:
+  AppUserSecretPolicy:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::IAM::ManagedPolicy"
+    DeletionPolicy: "Delete"
+    Properties:
+      ManagedPolicyName: AppUserSecret
+      Path: "/"
+      Description: IAM policy to grant access to a app_user secret in AWS Secrets Manager
+      Groups:
+        - Developers
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: secretsmanager:GetSecretValue
+            Resource: 
+              - arn:aws:secretsmanager:us-west-2:638891785980:secret:DevDbAppUserSecret-5rMqtgG2teG5-WSH9S1
+              - arn:aws:secretsmanager:us-west-2:638891785980:secret:DemoDbAppUserSecret-3vcChNRN6cjn-jYFpiQ
+              - arn:aws:secretsmanager:us-west-2:638891785980:secret:DbAppUserSecret-WHldkO1RZfje-EH8BiJ

@@ -1,0 +1,23 @@
+Resources:
+  SsmStartSessionPolicy:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::IAM::ManagedPolicy"
+    DeletionPolicy: "Delete"
+    Properties:
+      ManagedPolicyName: SsmStartSession
+      Path: "/"
+      Description: IAM policy to grant access to ecr-user to use SSM
+      Groups:
+        - Developers
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: ssm:StartSession
+            Resource: 
+              - arn:aws:ec2:us-west-2:638891785980:instance/i-*
+              - arn:aws:ssm:us-west-2:638891785980:document/SSM-SessionManagerRunShell
+          - Effect: Allow
+            Action: ssmmessages:OpenDataChannel
+            Resource: 
+              - arn:aws:ssm:us-west-2:638891785980:session/${aws:userid}-*

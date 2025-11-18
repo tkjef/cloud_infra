@@ -1,0 +1,31 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  ExistingRoleName:
+    Type: String
+    Description: Name of the existing IAM role to attach the policy to
+    Default: EC2-AppConfig-User-Agent
+
+Resources:
+  AppConfigS3AccessPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: S3ReadWritePolicy
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:ListBucket
+            Resource: 
+              - arn:aws:s3:::staffplus-s3-pw
+          - Effect: Allow
+            Action:
+              - s3:PutObject
+              - s3:GetObject
+              - s3:DeleteObject
+            Resource: 
+              - arn:aws:s3:::staffplus-s3-pw
+              - arn:aws:s3:::staffplus-s3-pw/*
+      Roles:
+        - !Ref ExistingRoleName

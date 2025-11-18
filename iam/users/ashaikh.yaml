@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Starter user used with the create_user.sh script.'
+Resources:
+  ashaikhPwSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: ashaikhPwSecret
+      Description: 'This secret has a dynamically generated secret password.'
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "ashaikh"}'
+        GenerateStringKey: password
+        PasswordLength: 30
+        ExcludeCharacters: '"@/\'
+  ashaikh:
+    Type: AWS::IAM::User
+    DependsOn:
+      - ashaikhPwSecret
+    Properties:
+      UserName: '{{resolve:secretsmanager:ashaikhPwSecret:SecretString:username:AWSCURRENT}}'
+      LoginProfile:
+        Password: '{{resolve:secretsmanager:ashaikhPwSecret:SecretString:password:AWSCURRENT}}'
+        PasswordResetRequired: false
+      Groups:
+        - IamAndMfa
+        - Developers
+        - ImportLambdaDevelopers
+  ashaikhAccessKey:
+    Type: AWS::IAM::AccessKey
+    DependsOn:
+      - ashaikh
+    Properties:
+      UserName: !Ref ashaikh
+      Status: Active
+  ashaikhAccessKeySecret:
+    Type: AWS::SecretsManager::Secret
+    DependsOn:
+      - ashaikh
+    Properties:
+      Name: ashaikhAccessKeySecret
+      Description: Secret for ashaikh IAM access key
+      SecretString: !Sub '{"ashaikhAccessKeyId":"${ashaikhAccessKey}","ashaikhSecretAccessKey":"${ashaikhAccessKey.SecretAccessKey}"}'

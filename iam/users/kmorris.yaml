@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Starter user used with the create_user.sh script.'
+Resources:
+  kmorrisPwSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: kmorrisPwSecret
+      Description: 'This secret has a dynamically generated secret password.'
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "kmorris"}'
+        GenerateStringKey: password
+        PasswordLength: 30
+        ExcludeCharacters: '"@/\'
+  kmorris:
+    Type: AWS::IAM::User
+    DependsOn:
+      - kmorrisPwSecret
+    Properties:
+      UserName: '{{resolve:secretsmanager:kmorrisPwSecret:SecretString:username:AWSCURRENT}}'
+      LoginProfile:
+        Password: '{{resolve:secretsmanager:kmorrisPwSecret:SecretString:password:AWSCURRENT}}'
+        PasswordResetRequired: false
+      Groups:
+        - IamAndMfa
+        - Developers
+        - ImportLambdaDevelopers
+  kmorrisAccessKey:
+    Type: AWS::IAM::AccessKey
+    DependsOn:
+      - kmorris
+    Properties:
+      UserName: !Ref kmorris
+      Status: Active
+  kmorrisAccessKeySecret:
+    Type: AWS::SecretsManager::Secret
+    DependsOn:
+      - kmorris
+    Properties:
+      Name: kmorrisAccessKeySecret
+      Description: Secret for kmorris IAM access key
+      SecretString: !Sub '{"kmorrisAccessKeyId":"${kmorrisAccessKey}","kmorrisSecretAccessKey":"${kmorrisAccessKey.SecretAccessKey}"}'

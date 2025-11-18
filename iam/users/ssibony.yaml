@@ -1,0 +1,42 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  ssibonyPwSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: ssibonyPwSecret
+      Description: 'This secret has a dynamically generated secret password.'
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "ssibony"}'
+        GenerateStringKey: "password"
+        PasswordLength: 30
+        ExcludeCharacters: '"@/\'
+  ssibony:
+    Type: AWS::IAM::User
+    DependsOn:
+      - ssibonyPwSecret
+    Properties:
+      UserName: "{{resolve:secretsmanager:ssibonyPwSecret:SecretString:username:AWSCURRENT}}"
+      LoginProfile:
+        Password: "{{resolve:secretsmanager:ssibonyPwSecret:SecretString:password:AWSCURRENT}}"
+        PasswordResetRequired: false
+      Groups:
+        - IamAndMfa
+        - Developers
+        - ImportLambdaDevelopers
+        - Mastec
+        - Sagemaker
+  ssibonyAccessKey:
+    Type: AWS::IAM::AccessKey
+    DependsOn:
+      - ssibony
+    Properties:
+      UserName: !Ref ssibony
+      Status: Active
+  ssibonyAccessKeySecret:
+    Type: AWS::SecretsManager::Secret
+    DependsOn:
+      - ssibony
+    Properties:
+      Name: ssibonyAccessKeySecret
+      Description: "Secret for ssibony IAM access key"
+      SecretString: !Sub '{"ssibonyAccessKeyId":"${ssibonyAccessKey}","ssibonySecretAccessKey":"${ssibonyAccessKey.SecretAccessKey}"}'

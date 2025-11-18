@@ -1,0 +1,25 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: prod-staffplus-s3-pw
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: ExpireNonCurrentVersions
+            Status: Enabled
+            NoncurrentVersionExpirationInDays: 3
+          - Id: ExpireIncompleteUploads
+            Status: Enabled
+            AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: 3
+      Tags:
+        - Key: Environment
+          Value: prod

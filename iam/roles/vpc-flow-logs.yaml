@@ -1,0 +1,48 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'IAM Role for VPC Flow Logs to publish to CloudWatch Logs'
+
+Resources:
+  VpcFlowLogsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: vpc-flow-logs.amazonaws.com
+            Action: sts:AssumeRole
+            # Optional: Add condition to prevent confused deputy
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
+              ArnLike:
+                aws:SourceArn: !Sub 'arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:vpc-flow-log/*'
+
+      Description: Role for VPC Flow Logs to publish logs to CloudWatch
+      RoleName: vpc-flow-logs
+
+  VpcFlowLogsPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: VPCFlowLogsCloudWatchPolicy
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+              - logs:DescribeLogGroups
+              - logs:DescribeLogStreams
+            Resource: '*'
+      Roles:
+        - !Ref VpcFlowLogsRole
+
+Outputs:
+  RoleArn:
+    Description: ARN of the IAM role for VPC Flow Logs
+    Value: !GetAtt VpcFlowLogsRole.Arn
+    Export:
+      Name: VpcFlowLogsRoleArn

@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Starter user used with the create_user.sh script.'
+Resources:
+  eksrepoPwSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: eksrepoPwSecret
+      Description: 'This secret has a dynamically generated secret password.'
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "eksrepo"}'
+        GenerateStringKey: password
+        PasswordLength: 30
+        ExcludeCharacters: '"@/\'
+  eksrepo:
+    Type: AWS::IAM::User
+    DependsOn:
+      - eksrepoPwSecret
+    Properties:
+      UserName: '{{resolve:secretsmanager:eksrepoPwSecret:SecretString:username:AWSCURRENT}}'
+      LoginProfile:
+        Password: '{{resolve:secretsmanager:eksrepoPwSecret:SecretString:password:AWSCURRENT}}'
+        PasswordResetRequired: false
+      Groups:
+        - IamAndMfa
+        - IamFullAccess
+        - CloudformationFullAccess
+        - SecretsFullAccess
+        - KubeFullAccess
+  eksrepoAccessKey:
+    Type: AWS::IAM::AccessKey
+    DependsOn:
+      - eksrepo
+    Properties:
+      UserName: !Ref eksrepo
+      Status: Active
+  eksrepoAccessKeySecret:
+    Type: AWS::SecretsManager::Secret
+    DependsOn:
+      - eksrepo
+    Properties:
+      Name: eksrepoAccessKeySecret
+      Description: Secret for eksrepo IAM access key
+      SecretString: !Sub '{"eksrepoAccessKeyId":"${eksrepoAccessKey}","eksrepoSecretAccessKey":"${eksrepoAccessKey.SecretAccessKey}"}'

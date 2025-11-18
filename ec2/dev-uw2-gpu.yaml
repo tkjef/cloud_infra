@@ -1,0 +1,157 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: dev-uw2-gpu EC2 instance with SSM and Patch Manager
+
+Parameters:
+  InstanceType:
+    Type: String
+    Default: g6.2xlarge
+    Description: EC2 instance type
+  LatestAmiId:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/canonical/ubuntu/server/noble/stable/current/amd64/hvm/ebs-gp3/ami-id
+    Description: Ubuntu 2404 AMI
+  PrivateSubnet:
+    Type: String
+    Default: subnet-0eadc79f52796d341 # us-west-2b
+    # Default: subnet-044c7a168f611f884 # us-west-2a
+    Description: Private subnet made outside cloudformation
+  InstanceSecurityGroupId:
+    Type: String
+    Default: sg-0fb997782712f6f4f
+    Description: Security Group made outside cloudformation
+
+Resources:
+  EC2Role:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+        - arn:aws:iam::aws:policy/SecretsManagerReadWrite
+      Tags:
+        - Key: Name
+          Value: EC2SSMRole
+
+  EC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref EC2Role
+
+  PrivateEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref LatestAmiId
+      InstanceType: !Ref InstanceType
+      IamInstanceProfile: !Ref EC2InstanceProfile
+      SubnetId: !Ref PrivateSubnet
+      KeyName: Ec2UserKeyPair
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: 60
+            VolumeType: gp3
+            DeleteOnTermination: true
+      SecurityGroupIds:
+        - !Ref InstanceSecurityGroupId
+      SourceDestCheck: false
+      Tags:
+        - Key: Name
+          Value: dev-uw2-gpu
+      MetadataOptions:
+        HttpEndpoint: enabled
+        HttpTokens: required
+        HttpPutResponseHopLimit: 2
+      UserData: !Base64
+        Fn::Sub: |
+          #!/bin/bash
+          apt update && apt upgrade -y   
+          apt install ubuntu-drivers-common -y
+          apt install nvidia-driver-580 -y   
+
+          wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb
+          dpkg -i cuda-keyring_1.1-1_all.deb   
+
+          apt update
+          apt install cuda-toolkit -y   
+
+          apt-get install -y docker.io
+          usermod -aG docker ubuntu
+
+          apt-get install -y nvidia-container-toolkit
+          nvidia-ctk runtime configure --runtime=docker
+          systemctl restart docker
+
+          snap install aws-cli --classic   
+
+          reboot
+
+  SSMLogsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${AWS::StackName}-ssm-logs'
+      VersioningConfiguration:
+        Status: Suspended
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+    DeletionPolicy: Retain
+
+  SSMLogsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref SSMLogsBucket
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ssm.amazonaws.com
+            Action:
+              - s3:PutObject
+              - s3:PutObjectAcl
+            Resource: !Sub '${SSMLogsBucket.Arn}/patch-logs/*'   
+
+  SSMPatchBaseline:
+    Type: AWS::SSM::PatchBaseline
+    Properties:
+      Name: !Sub '${AWS::StackName}-PatchBaseline'
+      OperatingSystem: AMAZON_LINUX
+      ApprovalRules:
+        PatchRules:
+          - PatchFilterGroup:
+              PatchFilters:
+                - Key: CLASSIFICATION
+                  Values:
+                    - Security
+                    - Bugfix
+                - Key: SEVERITY
+                  Values:
+                    - Important
+                    - Critical
+            ApproveAfterDays: 7   
+
+  SSMAssociation:
+    Type: AWS::SSM::Association
+    Properties:
+      Name: AWS-RunPatchBaseline
+      Targets:
+        - Key: InstanceIds
+          Values:
+            - !Ref PrivateEC2Instance
+      Parameters:
+        Operation:
+          - Scan
+      ScheduleExpression: rate(1 day)
+      OutputLocation:
+        S3Location:
+          OutputS3BucketName: !Ref SSMLogsBucket
+          OutputS3KeyPrefix: patch-logs

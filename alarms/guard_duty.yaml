@@ -1,0 +1,60 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Enable AWS GuardDuty for intrusion detection'
+
+Resources:
+  GuardDutyDetector:
+    Type: 'AWS::GuardDuty::Detector'
+    Properties:
+      Enable: true
+      FindingPublishingFrequency: FIFTEEN_MINUTES
+      DataSources:
+        S3Logs:
+          Enable: true
+        Kubernetes:
+          AuditLogs:
+            Enable: true
+        MalwareProtection:
+          ScanEc2InstanceWithFindings:
+            EbsVolumes: true
+
+  GuardDutyNotificationTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: GuardDuty Findings
+      TopicName: GuardDuty-Findings
+
+  GuardDutyNotificationTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+            Action: sns:Publish
+            Resource: !Ref GuardDutyNotificationTopic
+      Topics:
+        - !Ref GuardDutyNotificationTopic
+
+  GuardDutyNotificationSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref GuardDutyNotificationTopic
+      Protocol: email
+      Endpoint: devops@proscore.ai
+
+  GuardDutyEventRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: GuardDuty-FindingsEvents
+      Description: 'Rule for GuardDuty findings'
+      State: ENABLED
+      EventPattern:
+        source:
+          - aws.guardduty
+        detail-type:
+          - GuardDuty Finding
+      Targets:
+        - Arn: !Ref GuardDutyNotificationTopic
+          Id: GuardDutyToSNS

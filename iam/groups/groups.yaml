@@ -1,0 +1,200 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Groups for managing policies in aws iam.'
+
+Resources:
+  AdminsGroup:
+    Type: 'AWS::IAM::Group'
+    Properties:
+      GroupName: Administrators
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess
+        - arn:aws:iam::aws:policy/AWSBillingConductorFullAccess
+        - arn:aws:iam::aws:policy/job-function/Billing
+        - arn:aws:iam::aws:policy/IAMUserChangePassword
+  IamAndMfaGroup:
+    Type: 'AWS::IAM::Group'
+    Properties:
+      GroupName: IamAndMfa
+      Policies:
+        - PolicyName: IamAndMfa
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - iam:ListMFADevices
+                  - iam:ListVirtualMFADevices
+                  - iam:GetUser
+                  - iam:GetLoginProfile
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - iam:CreateVirtualMFADevice
+                Resource: "arn:aws:iam::638891785980:mfa/*"
+              - Effect: Allow
+                Action:
+                  - iam:EnableMFADevice
+                  - iam:DeleteVirtualMFADevice
+                  - iam:ResyncMFADevice
+                  - iam:ListAccessKeys
+                  - iam:ListSigningCertificates
+                Resource: !Sub "arn:aws:iam::638891785980:user/${!aws:username}"
+              - Effect: Allow
+                Action:
+                  - iam:DeactivateMFADevice
+                Resource: !Sub "arn:aws:iam::638891785980:user/${!aws:username}"
+                Condition:
+                  Bool:
+                    "aws:MultiFactorAuthPresent": "true"
+  DevelopersGroup:
+    Type: 'AWS::IAM::Group'
+    Properties:
+      GroupName: Developers
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/ReadOnlyAccess
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
+        - arn:aws:iam::aws:policy/AWSStepFunctionsFullAccess
+        - arn:aws:iam::aws:policy/IAMUserChangePassword
+        - arn:aws:iam::638891785980:policy/proscore-dev-s3
+        - arn:aws:iam::638891785980:policy/s3-dev-test
+  ImportLambdaDevelopersGroup:
+    Type: 'AWS::IAM::Group'
+    Properties:
+      GroupName: ImportLambdaDevelopers
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess
+        - arn:aws:iam::638891785980:policy/DevLambda
+  SagemakerGroup:
+    Type: 'AWS::IAM::Group'
+    Properties:
+      GroupName: Sagemaker
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSageMakerFullAccess
+  IamAdminGroup:
+    Type: 'AWS::IAM::Group'
+    Properties:
+      GroupName: IamFullAccess
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/IAMFullAccess
+  CloudformationAdminGroup:
+    Type: 'AWS::IAM::Group'
+    Properties:
+      GroupName: CloudformationFullAccess
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSCloudFormationFullAccess
+  SecretsAdminGroup:
+    Type: 'AWS::IAM::Group'
+    Properties:
+      GroupName: SecretsFullAccess
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/SecretsManagerReadWrite
+  SSMGroup:
+    Type: 'AWS::IAM::Group'
+    Properties:
+      GroupName: SSMFullAccess
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSSMFullAccess
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+        - arn:aws:iam::aws:policy/AmazonEC2FullAccess
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+  KubeAdminGroup:
+    Type: 'AWS::IAM::Group'
+    Properties:
+      GroupName: KubeFullAccess
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
+        - arn:aws:iam::aws:policy/AmazonEKSBlockStoragePolicy
+        - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
+        - arn:aws:iam::aws:policy/AmazonEKSComputePolicy
+        - arn:aws:iam::aws:policy/AmazonEKSLoadBalancingPolicy
+        - arn:aws:iam::aws:policy/AmazonEKSLocalOutpostClusterPolicy
+        - arn:aws:iam::aws:policy/AmazonEKSNetworkingPolicy
+        - arn:aws:iam::aws:policy/AmazonEKSServicePolicy
+        - arn:aws:iam::aws:policy/AmazonEKSVPCResourceController
+        - arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
+        # - arn:aws:iam::aws:policy/AmazonEKSWorkerNodeMinimalPolicy
+        # - arn:aws:iam::aws:policy/AmazonEKSDashboardConsoleReadOnly
+        # - arn:aws:iam::aws:policy/AmazonEKSFargatePodExecutionRolePolicy
+        # - arn:aws:iam::aws:policy/aws-service-role/AmazonEKSConnectorServiceRolePolicy
+        # - arn:aws:iam::aws:policy/aws-service-role/AmazonEKSDashboardServiceRolePolicy
+        # - arn:aws:iam::aws:policy/aws-service-role/AmazonEKSForFargateServiceRolePolicy
+        # - arn:aws:iam::aws:policy/aws-service-role/AmazonEKSLocalOutpostServiceRolePolicy
+        # - arn:aws:iam::aws:policy/aws-service-role/AmazonEKSServiceRolePolicy
+        # - arn:aws:iam::aws:policy/service-role/AWSFaultInjectionSimulatorEKSAccess
+        # - arn:aws:iam::aws:policy/aws-service-role/AWSServiceRoleForAmazonEKSNodegroup
+  MastecGroup:
+    Type: 'AWS::IAM::Group'
+    Properties:
+      GroupName: Mastec
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSAppRunnerFullAccess
+        - arn:aws:iam::aws:policy/IAMFullAccess
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess
+      Policies:
+        - PolicyName: MastecDynamoDb
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Sid: ListAndDescribe
+                Effect: Allow
+                Action:
+                  - dynamodb:List*
+                  - dynamodb:DescribeReservedCapacity*
+                  - dynamodb:DescribeLimits
+                  - dynamodb:DescribeTimeToLive
+                Resource: '*'
+              - Sid: SpecificTable
+                Effect: Allow
+                Action:
+                  - dynamodb:BatchGet*
+                  - dynamodb:DescribeStream
+                  - dynamodb:DescribeTable
+                  - dynamodb:Get*
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                  - dynamodb:BatchWrite*
+                  - dynamodb:CreateTable
+                  - dynamodb:Delete*
+                  - dynamodb:Update*
+                  - dynamodb:PutItem
+                Resource: "arn:aws:dynamodb:*:*:table/PayrollImportResults"
+
+# Add manually created users to groups
+  UserToDevGroup:
+    Type: 'AWS::IAM::UserToGroupAddition'
+    Properties:
+      GroupName: !Ref DevelopersGroup
+      Users:
+        - Aurora.Hampton
+        - chet.kumar
+        - gayathri.k
+        - guru.singh
+        - jison
+        - ljmorris
+        - Matt_Thompson
+        - mikeison
+        - ndouchi
+  # UserToImportLambdaDevGroup:
+  #   Type: 'AWS::IAM::UserToGroupAddition'
+  #   Properties:
+  #     GroupName: !Ref ImportLambdaDevelopersGroup
+  #     Users:
+  #       - chet.kumar
+  #       - gayathri.k
+  #       - guru.singh
+  #       - jison
+  #       - ndouchi
+  UserToAdminGroup:
+    Type: 'AWS::IAM::UserToGroupAddition'
+    Properties:
+      GroupName: !Ref AdminsGroup
+      Users:
+        - Aurora.Hampton
+        - jeff.hale
+        - jison
+        - ljmorris
+        - Matt_Thompson
+        - mikeison
+        - rahul
+        - Thomas.Brantley

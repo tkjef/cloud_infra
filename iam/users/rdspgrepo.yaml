@@ -1,0 +1,39 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Starter user used with the create_user.sh script.'
+Resources:
+  rdspgrepoPwSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: rdspgrepoPwSecret
+      Description: 'This secret has a dynamically generated secret password.'
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "rdspgrepo"}'
+        GenerateStringKey: password
+        PasswordLength: 30
+        ExcludeCharacters: '"@/\'
+  rdspgrepo:
+    Type: AWS::IAM::User
+    DependsOn:
+      - rdspgrepoPwSecret
+    Properties:
+      UserName: '{{resolve:secretsmanager:rdspgrepoPwSecret:SecretString:username:AWSCURRENT}}'
+      LoginProfile:
+        Password: '{{resolve:secretsmanager:rdspgrepoPwSecret:SecretString:password:AWSCURRENT}}'
+        PasswordResetRequired: false
+      Groups:
+        - IamAndMfa
+  rdspgrepoAccessKey:
+    Type: AWS::IAM::AccessKey
+    DependsOn:
+      - rdspgrepo
+    Properties:
+      UserName: !Ref rdspgrepo
+      Status: Active
+  rdspgrepoAccessKeySecret:
+    Type: AWS::SecretsManager::Secret
+    DependsOn:
+      - rdspgrepo
+    Properties:
+      Name: rdspgrepoAccessKeySecret
+      Description: Secret for rdspgrepo IAM access key
+      SecretString: !Sub '{"rdspgrepoAccessKeyId":"${rdspgrepoAccessKey}","rdspgrepoSecretAccessKey":"${rdspgrepoAccessKey.SecretAccessKey}"}'

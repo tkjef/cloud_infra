@@ -1,0 +1,293 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template to create CloudWatch alarms for Load Balancer 5XX errors'
+
+Parameters:
+  AlarmNotificationEmail:
+    Type: String
+    Description: Email address to receive alarm notifications
+    Default: devops@proscore.ai
+  
+  AlarmThreshold:
+    Type: Number
+    Description: Threshold for 5XX errors to trigger the alarm
+    Default: 5
+  
+  EvaluationPeriods:
+    Type: Number
+    Description: Number of periods to evaluate the alarm
+    Default: 1
+  
+  Period:
+    Type: Number
+    Description: Period in seconds to evaluate the metric
+    Default: 300
+
+Resources:
+  LoadBalancerErrorAlarmTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: Load Balancer Error Alarms
+      TopicName: LoadBalancer-5XX-Errors
+      Subscription:
+        - Protocol: email
+          Endpoint: !Ref AlarmNotificationEmail
+
+  DevPortalApiAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: dev-portal-api-5XX-Errors
+      AlarmDescription: Alarm for 5XX errors on dev-portal-api load balancer
+      MetricName: HTTPCode_Target_5XX_Count
+      Namespace: AWS/ApplicationELB
+      Statistic: Sum
+      Period: !Ref Period
+      EvaluationPeriods: !Ref EvaluationPeriods
+      Threshold: !Ref AlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: LoadBalancer
+          Value: dev-portal-api
+      AlarmActions:
+        - !Ref LoadBalancerErrorAlarmTopic
+      InsufficientDataActions:
+        - !Ref LoadBalancerErrorAlarmTopic
+
+  EmployeesPortalDevAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: employees-portal-dev-5XX-Errors
+      AlarmDescription: Alarm for 5XX errors on employees-portal-dev load balancer
+      MetricName: HTTPCode_Target_5XX_Count
+      Namespace: AWS/ApplicationELB
+      Statistic: Sum
+      Period: !Ref Period
+      EvaluationPeriods: !Ref EvaluationPeriods
+      Threshold: !Ref AlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: LoadBalancer
+          Value: employees-portal-dev
+      AlarmActions:
+        - !Ref LoadBalancerErrorAlarmTopic
+      InsufficientDataActions:
+        - !Ref LoadBalancerErrorAlarmTopic
+
+  AdminDevLbAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: admin-dev-lb-5XX-Errors
+      AlarmDescription: Alarm for 5XX errors on admin-dev-lb load balancer
+      MetricName: HTTPCode_Target_5XX_Count
+      Namespace: AWS/ApplicationELB
+      Statistic: Sum
+      Period: !Ref Period
+      EvaluationPeriods: !Ref EvaluationPeriods
+      Threshold: !Ref AlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: LoadBalancer
+          Value: admin-dev-lb
+      AlarmActions:
+        - !Ref LoadBalancerErrorAlarmTopic
+      InsufficientDataActions:
+        - !Ref LoadBalancerErrorAlarmTopic
+
+  JenkinsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: jenkins-5XX-Errors
+      AlarmDescription: Alarm for 5XX errors on jenkins load balancer
+      MetricName: HTTPCode_Target_5XX_Count
+      Namespace: AWS/ApplicationELB
+      Statistic: Sum
+      Period: !Ref Period
+      EvaluationPeriods: !Ref EvaluationPeriods
+      Threshold: !Ref AlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: LoadBalancer
+          Value: jenkins
+      AlarmActions:
+        - !Ref LoadBalancerErrorAlarmTopic
+      InsufficientDataActions:
+        - !Ref LoadBalancerErrorAlarmTopic
+
+  AdminProdAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: admin-prod-5XX-Errors
+      AlarmDescription: Alarm for 5XX errors on admin-prod load balancer
+      MetricName: HTTPCode_Target_5XX_Count
+      Namespace: AWS/ApplicationELB
+      Statistic: Sum
+      Period: !Ref Period
+      EvaluationPeriods: !Ref EvaluationPeriods
+      Threshold: !Ref AlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: LoadBalancer
+          Value: admin-prod
+      AlarmActions:
+        - !Ref LoadBalancerErrorAlarmTopic
+      InsufficientDataActions:
+        - !Ref LoadBalancerErrorAlarmTopic
+
+  EmployeePortalProdAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: employee-portal-prod-5XX-Errors
+      AlarmDescription: Alarm for 5XX errors on employee-portal-prod load balancer
+      MetricName: HTTPCode_Target_5XX_Count
+      Namespace: AWS/ApplicationELB
+      Statistic: Sum
+      Period: !Ref Period
+      EvaluationPeriods: !Ref EvaluationPeriods
+      Threshold: !Ref AlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: LoadBalancer
+          Value: employee-portal-prod
+      AlarmActions:
+        - !Ref LoadBalancerErrorAlarmTopic
+      InsufficientDataActions:
+        - !Ref LoadBalancerErrorAlarmTopic
+
+  ProdPortalApiAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: prod-portal-api-5XX-Errors
+      AlarmDescription: Alarm for 5XX errors on prod-portal-api load balancer
+      MetricName: HTTPCode_Target_5XX_Count
+      Namespace: AWS/ApplicationELB
+      Statistic: Sum
+      Period: !Ref Period
+      EvaluationPeriods: !Ref EvaluationPeriods
+      Threshold: !Ref AlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: LoadBalancer
+          Value: prod-portal-api
+      AlarmActions:
+        - !Ref LoadBalancerErrorAlarmTopic
+      InsufficientDataActions:
+        - !Ref LoadBalancerErrorAlarmTopic
+
+  DevPwcApiAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: dev-pwc-api-5XX-Errors
+      AlarmDescription: Alarm for 5XX errors on dev-pwc-api load balancer
+      MetricName: HTTPCode_Target_5XX_Count
+      Namespace: AWS/ApplicationELB
+      Statistic: Sum
+      Period: !Ref Period
+      EvaluationPeriods: !Ref EvaluationPeriods
+      Threshold: !Ref AlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: LoadBalancer
+          Value: dev-pwc-api
+      AlarmActions:
+        - !Ref LoadBalancerErrorAlarmTopic
+      InsufficientDataActions:
+        - !Ref LoadBalancerErrorAlarmTopic
+
+  ProdPwcApiAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: prod-pwc-api-5XX-Errors
+      AlarmDescription: Alarm for 5XX errors on prod-pwc-api load balancer
+      MetricName: HTTPCode_Target_5XX_Count
+      Namespace: AWS/ApplicationELB
+      Statistic: Sum
+      Period: !Ref Period
+      EvaluationPeriods: !Ref EvaluationPeriods
+      Threshold: !Ref AlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: LoadBalancer
+          Value: prod-pwc-api
+      AlarmActions:
+        - !Ref LoadBalancerErrorAlarmTopic
+      InsufficientDataActions:
+        - !Ref LoadBalancerErrorAlarmTopic
+
+  QaLoadBalancerAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: QAloadbalancer-5XX-Errors
+      AlarmDescription: Alarm for 5XX errors on QAloadbalancer load balancer
+      MetricName: HTTPCode_Target_5XX_Count
+      Namespace: AWS/ApplicationELB
+      Statistic: Sum
+      Period: !Ref Period
+      EvaluationPeriods: !Ref EvaluationPeriods
+      Threshold: !Ref AlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: LoadBalancer
+          Value: QAloadbalancer
+      AlarmActions:
+        - !Ref LoadBalancerErrorAlarmTopic
+      InsufficientDataActions:
+        - !Ref LoadBalancerErrorAlarmTopic
+
+  ReportDevAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: report-dev-5XX-Errors
+      AlarmDescription: Alarm for 5XX errors on report-dev load balancer
+      MetricName: HTTPCode_Target_5XX_Count
+      Namespace: AWS/ApplicationELB
+      Statistic: Sum
+      Period: !Ref Period
+      EvaluationPeriods: !Ref EvaluationPeriods
+      Threshold: !Ref AlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: LoadBalancer
+          Value: report-dev
+      AlarmActions:
+        - !Ref LoadBalancerErrorAlarmTopic
+      InsufficientDataActions:
+        - !Ref LoadBalancerErrorAlarmTopic
+
+  ImportbeAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: importbe-5XX-Errors
+      AlarmDescription: Alarm for 5XX errors on importbe load balancer
+      MetricName: HTTPCode_Target_5XX_Count
+      Namespace: AWS/ApplicationELB
+      Statistic: Sum
+      Period: !Ref Period
+      EvaluationPeriods: !Ref EvaluationPeriods
+      Threshold: !Ref AlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: LoadBalancer
+          Value: importbe
+      AlarmActions:
+        - !Ref LoadBalancerErrorAlarmTopic
+      InsufficientDataActions:
+        - !Ref LoadBalancerErrorAlarmTopic
+
+  AiStructuredImportAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: ai-structured-import-5XX-Errors
+      AlarmDescription: Alarm for 5XX errors on ai-structured-import load balancer
+      MetricName: HTTPCode_Target_5XX_Count
+      Namespace: AWS/ApplicationELB
+      Statistic: Sum
+      Period: !Ref Period
+      EvaluationPeriods: !Ref EvaluationPeriods
+      Threshold: !Ref AlarmThreshold
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: LoadBalancer
+          Value: ai-structured-import
+      AlarmActions:
+        - !Ref LoadBalancerErrorAlarmTopic
+      InsufficientDataActions:
+        - !Ref LoadBalancerErrorAlarmTopic

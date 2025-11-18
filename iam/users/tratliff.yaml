@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Starter user used with the create_user.sh script.'
+Resources:
+  tratliffPwSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: tratliffPwSecret
+      Description: 'This secret has a dynamically generated secret password.'
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "tratliff"}'
+        GenerateStringKey: password
+        PasswordLength: 30
+        ExcludeCharacters: '"@/\'
+  tratliff:
+    Type: AWS::IAM::User
+    DependsOn:
+      - tratliffPwSecret
+    Properties:
+      UserName: '{{resolve:secretsmanager:tratliffPwSecret:SecretString:username:AWSCURRENT}}'
+      LoginProfile:
+        Password: '{{resolve:secretsmanager:tratliffPwSecret:SecretString:password:AWSCURRENT}}'
+        PasswordResetRequired: false
+      Groups:
+        - IamAndMfa
+        - Mastec
+        - MossS3Access
+        - PrimorisAccess
+        - S3Access
+  tratliffAccessKey:
+    Type: AWS::IAM::AccessKey
+    DependsOn:
+      - tratliff
+    Properties:
+      UserName: !Ref tratliff
+      Status: Active
+  tratliffAccessKeySecret:
+    Type: AWS::SecretsManager::Secret
+    DependsOn:
+      - tratliff
+    Properties:
+      Name: tratliffAccessKeySecret
+      Description: Secret for tratliff IAM access key
+      SecretString: !Sub '{"tratliffAccessKeyId":"${tratliffAccessKey}","tratliffSecretAccessKey":"${tratliffAccessKey.SecretAccessKey}"}'

@@ -1,0 +1,121 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template to create CloudWatch alarms for DynamoDB tables write capacity'
+
+Parameters:
+  AlarmNotificationEmail:
+    Type: String
+    Description: Email address to notify when the alarms are triggered
+    Default: devops@proscore.ai
+  
+  ThresholdPercentage:
+    Type: Number
+    Description: Percentage of consumed write capacity units that triggers the alarm
+    Default: 80
+    MinValue: 1
+    MaxValue: 100
+
+Resources:
+  DynamoDBWriteCapacityAlarmTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: DynamoDB Write Capacity Alarm Topic
+      TopicName: DynamoDBWriteCapacityAlarmTopic
+
+  DynamoDBWriteCapacityAlarmSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref DynamoDBWriteCapacityAlarmTopic
+      Protocol: email
+      Endpoint: !Ref AlarmNotificationEmail
+
+  StepFunctionImportErrorLogsWriteCapacityAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: WriteCapacityAlarm-step-function-import-error-logs
+      AlarmDescription: Alarm when write capacity exceeds threshold for step-function-import-error-logs table
+      MetricName: ConsumedWriteCapacityUnits
+      Namespace: AWS/DynamoDB
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: !Ref ThresholdPercentage
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      Dimensions:
+        - Name: TableName
+          Value: step-function-import-error-logs
+      AlarmActions:
+        - !Ref DynamoDBWriteCapacityAlarmTopic
+      InsufficientDataActions:
+        - !Ref DynamoDBWriteCapacityAlarmTopic
+      OKActions:
+        - !Ref DynamoDBWriteCapacityAlarmTopic
+
+  StepFunctionImportErrorLogsProdWriteCapacityAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: WriteCapacityAlarm-step-function-import-error-logs-prod
+      AlarmDescription: Alarm when write capacity exceeds threshold for step-function-import-error-logs-prod table
+      MetricName: ConsumedWriteCapacityUnits
+      Namespace: AWS/DynamoDB
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: !Ref ThresholdPercentage
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      Dimensions:
+        - Name: TableName
+          Value: step-function-import-error-logs-prod
+      AlarmActions:
+        - !Ref DynamoDBWriteCapacityAlarmTopic
+      InsufficientDataActions:
+        - !Ref DynamoDBWriteCapacityAlarmTopic
+      OKActions:
+        - !Ref DynamoDBWriteCapacityAlarmTopic
+
+  StepFunctionImportErrorLogsTestWriteCapacityAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: WriteCapacityAlarm-step-function-import-error-logs-test
+      AlarmDescription: Alarm when write capacity exceeds threshold for step-function-import-error-logs-test table
+      MetricName: ConsumedWriteCapacityUnits
+      Namespace: AWS/DynamoDB
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: !Ref ThresholdPercentage
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      Dimensions:
+        - Name: TableName
+          Value: step-function-import-error-logs-test
+      AlarmActions:
+        - !Ref DynamoDBWriteCapacityAlarmTopic
+      InsufficientDataActions:
+        - !Ref DynamoDBWriteCapacityAlarmTopic
+      OKActions:
+        - !Ref DynamoDBWriteCapacityAlarmTopic
+
+  ApiGatewayAiImportClientAliasesWriteCapacityAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: WriteCapacityAlarm-api-gateway-ai-import-client-aliases
+      AlarmDescription: Alarm when write capacity exceeds threshold for api-gateway-ai-import-client-aliases
+      MetricName: ConsumedWriteCapacityUnits
+      Namespace: AWS/DynamoDB
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: !Ref ThresholdPercentage
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      Dimensions:
+        - Name: TableName
+          Value: api-gateway-ai-import-client-aliases
+      AlarmActions:
+        - !Ref DynamoDBWriteCapacityAlarmTopic
+      InsufficientDataActions:
+        - !Ref DynamoDBWriteCapacityAlarmTopic
+      OKActions:
+        - !Ref DynamoDBWriteCapacityAlarmTopic

@@ -1,0 +1,78 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template to create CloudWatch alarms for load balancer server errors'
+
+Parameters:
+  LoadBalancerName:
+    Type: String
+    Default: pdf-extraction-alb
+    Description: Name of the Application Load Balancer to monitor
+  
+  AlarmEmailAddress:
+    Type: String
+    Default: devops@proscore.ai
+    Description: Email address to receive alarm notifications
+  
+  AlarmThreshold:
+    Type: Number
+    Default: 10
+    Description: Number of 5XX errors to trigger the alarm
+  
+  EvaluationPeriods:
+    Type: Number
+    Default: 5
+    Description: Number of periods to evaluate the alarm
+  
+  Period:
+    Type: Number
+    Default: 60
+    Description: Evaluation period in seconds
+
+Resources:
+  SNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: LoadBalancerErrorAlarm
+      TopicName: LoadBalancerErrorAlarm
+      Subscription:
+        - Endpoint: !Ref AlarmEmailAddress
+          Protocol: email
+  LoadBalancer5XXAlarm:
+      Type: AWS::CloudWatch::Alarm
+      Properties:
+        AlarmDescription: !Sub 'Alarm for 5XX errors on ${LoadBalancerName}'
+        AlarmName: !Sub '${LoadBalancerName}-5XX-Errors'
+        ComparisonOperator: GreaterThanThreshold
+        EvaluationPeriods: !Ref EvaluationPeriods
+        MetricName: HTTPCode_ELB_5XX_Count
+        Namespace: AWS/ApplicationELB
+        Period: !Ref Period
+        Statistic: Sum
+        Threshold: !Ref AlarmThreshold
+        TreatMissingData: notBreaching
+        Dimensions:
+          - Name: LoadBalancer
+            Value: !Ref LoadBalancerName
+        AlarmActions:
+          - !Ref SNSTopic
+        OKActions:
+          - !Ref SNSTopic
+  BackendServer5XXAlarm:
+      Type: AWS::CloudWatch::Alarm
+      Properties:
+        AlarmDescription: !Sub 'Alarm for backend 5XX errors on ${LoadBalancerName}'
+        AlarmName: !Sub '${LoadBalancerName}-Backend-5XX-Errors'
+        ComparisonOperator: GreaterThanThreshold
+        EvaluationPeriods: !Ref EvaluationPeriods
+        MetricName: HTTPCode_Target_5XX_Count
+        Namespace: AWS/ApplicationELB
+        Period: !Ref Period
+        Statistic: Sum
+        Threshold: !Ref AlarmThreshold
+        TreatMissingData: notBreaching
+        Dimensions:
+          - Name: LoadBalancer
+            Value: !Ref LoadBalancerName
+        AlarmActions:
+          - !Ref SNSTopic
+        OKActions:
+          - !Ref SNSTopic

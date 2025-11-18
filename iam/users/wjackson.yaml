@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  WayneJacksonPwSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: WayneJacksonPwSecret
+      Description: 'This secret has a dynamically generated secret password.'
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "wjackson"}'
+        GenerateStringKey: "password"
+        PasswordLength: 30
+        ExcludeCharacters: '"@/\'
+  wjackson:
+    Type: AWS::IAM::User
+    DependsOn:
+      - WayneJacksonPwSecret
+    Properties:
+      UserName: "{{resolve:secretsmanager:WayneJacksonPwSecret:SecretString:username:AWSCURRENT}}"
+      LoginProfile:
+        Password: "{{resolve:secretsmanager:WayneJacksonPwSecret:SecretString:password:AWSCURRENT}}"
+        PasswordResetRequired: false
+      Groups:
+        - IamAndMfa
+        - Developers
+        - ImportLambdaDevelopers
+        - Mastec
+  WayneJacksonAccessKey:
+    Type: AWS::IAM::AccessKey
+    DependsOn:
+      - wjackson
+    Properties:
+      UserName: !Ref wjackson
+      Status: Active
+  WayneJacksonAccessKeySecret:
+    Type: AWS::SecretsManager::Secret
+    DependsOn:
+      - wjackson
+    Properties:
+      Name: WayneJacksonAccessKeySecret
+      Description: "Secret for Wayne Jackson IAM access key"
+      SecretString: !Sub '{"WayneJacksonAccessKeyId":"${WayneJacksonAccessKey}","WayneJacksonSecretAccessKey":"${WayneJacksonAccessKey.SecretAccessKey}"}'

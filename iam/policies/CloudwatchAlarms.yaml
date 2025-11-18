@@ -1,0 +1,19 @@
+Resources:
+  AppUserSecretPolicy:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::IAM::ManagedPolicy"
+    DeletionPolicy: "Delete"
+    Properties:
+      ManagedPolicyName: CloudwatchAlarms
+      Path: "/"
+      Description: IAM policy to grant access to a put and delete cloudwatch alarms
+      Users:
+        - awsiamrepo
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: 
+              - cloudwatch:PutMetricAlarm
+              - cloudwatch:DeleteAlarms
+            Resource: arn:aws:cloudwatch:*:*:alarm:*

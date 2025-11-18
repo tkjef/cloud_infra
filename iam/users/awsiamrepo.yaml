@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'aws_iam repo user for github actions automation'
+Resources:
+  awsiamrepoPwSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: awsiamrepoPwSecret
+      Description: 'This secret has a dynamically generated secret password.'
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "awsiamrepo"}'
+        GenerateStringKey: password
+        PasswordLength: 30
+        ExcludeCharacters: '"@/\'
+  awsiamrepo:
+    Type: AWS::IAM::User
+    DependsOn:
+      - awsiamrepoPwSecret
+    Properties:
+      UserName: '{{resolve:secretsmanager:awsiamrepoPwSecret:SecretString:username:AWSCURRENT}}'
+      Groups:
+        - IamAndMfa
+        - IamFullAccess
+        - CloudformationFullAccess
+        - SecretsFullAccess
+        - SSMFullAccess
+  awsiamrepoAccessKey:
+    Type: AWS::IAM::AccessKey
+    DependsOn:
+      - awsiamrepo
+    Properties:
+      UserName: !Ref awsiamrepo
+      Status: Active
+  awsiamrepoAccessKeySecret:
+    Type: AWS::SecretsManager::Secret
+    DependsOn:
+      - awsiamrepo
+    Properties:
+      Name: awsiamrepoAccessKeySecret
+      Description: Secret for awsiamrepo IAM access key
+      SecretString: !Sub '{"awsiamrepoAccessKeyId":"${awsiamrepoAccessKey}","awsiamrepoSecretAccessKey":"${awsiamrepoAccessKey.SecretAccessKey}"}'

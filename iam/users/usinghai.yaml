@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Starter user used with the create_user.sh script.'
+Resources:
+  usinghaiPwSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: usinghaiPwSecret
+      Description: 'This secret has a dynamically generated secret password.'
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "usinghai"}'
+        GenerateStringKey: password
+        PasswordLength: 30
+        ExcludeCharacters: '"@/\'
+  usinghai:
+    Type: AWS::IAM::User
+    DependsOn:
+      - usinghaiPwSecret
+    Properties:
+      UserName: '{{resolve:secretsmanager:usinghaiPwSecret:SecretString:username:AWSCURRENT}}'
+      LoginProfile:
+        Password: '{{resolve:secretsmanager:usinghaiPwSecret:SecretString:password:AWSCURRENT}}'
+        PasswordResetRequired: false
+      Groups:
+        - IamAndMfa
+        - Developers
+        - StepFunctions
+        - S3Access
+        - PrimorisAccess
+  usinghaiAccessKey:
+    Type: AWS::IAM::AccessKey
+    DependsOn:
+      - usinghai
+    Properties:
+      UserName: !Ref usinghai
+      Status: Active
+  usinghaiAccessKeySecret:
+    Type: AWS::SecretsManager::Secret
+    DependsOn:
+      - usinghai
+    Properties:
+      Name: usinghaiAccessKeySecret
+      Description: Secret for usinghai IAM access key
+      SecretString: !Sub '{"usinghaiAccessKeyId":"${usinghaiAccessKey}","usinghaiSecretAccessKey":"${usinghaiAccessKey.SecretAccessKey}"}'

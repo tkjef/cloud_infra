@@ -1,0 +1,44 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Starter user used with the create_user.sh script.'
+Resources:
+  gayathriPwSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: gayathriPwSecret
+      Description: 'This secret has a dynamically generated secret password.'
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "gayathri"}'
+        GenerateStringKey: password
+        PasswordLength: 30
+        ExcludeCharacters: '"@/\'
+  gayathri:
+    Type: AWS::IAM::User
+    DependsOn:
+      - gayathriPwSecret
+    Properties:
+      UserName: '{{resolve:secretsmanager:gayathriPwSecret:SecretString:username:AWSCURRENT}}'
+      LoginProfile:
+        Password: '{{resolve:secretsmanager:gayathriPwSecret:SecretString:password:AWSCURRENT}}'
+        PasswordResetRequired: false
+      Groups:
+        - IamAndMfa
+        - Developers
+        - ImportLambdaDevelopers
+        - Mastec
+        - Sagemaker
+        - SecretsManager
+  gayathriAccessKey:
+    Type: AWS::IAM::AccessKey
+    DependsOn:
+      - gayathri
+    Properties:
+      UserName: !Ref gayathri
+      Status: Active
+  gayathriAccessKeySecret:
+    Type: AWS::SecretsManager::Secret
+    DependsOn:
+      - gayathri
+    Properties:
+      Name: gayathriAccessKeySecret
+      Description: Secret for gayathri IAM access key
+      SecretString: !Sub '{"gayathriAccessKeyId":"${gayathriAccessKey}","gayathriSecretAccessKey":"${gayathriAccessKey.SecretAccessKey}"}'

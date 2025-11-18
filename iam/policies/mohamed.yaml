@@ -1,0 +1,35 @@
+Resources:
+  AppUserSecretPolicy:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::IAM::ManagedPolicy"
+    DeletionPolicy: "Delete"
+    Properties:
+      ManagedPolicyName: Mohamed
+      Path: "/"
+      Description: IAM policy to grant access for Mohamed
+      Groups:
+        - Developers
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: secretsmanager:GetSecretValue
+            Resource: 
+              - arn:aws:secretsmanager:us-west-2:638891785980:secret:ParseServerSandboxDbAppUser-Bcpugowil5Rs-6s26WF
+              - arn:aws:secretsmanager:us-west-2:638891785980:secret:mohamedPwSecret-PAUjBc
+              - arn:aws:secretsmanager:us-west-2:638891785980:secret:mohamedAccessKeySecret-c8Ti4G
+          - Effect: Allow
+            Action: rds-db:connect
+            Resource:
+              - arn:aws:rds:us-west-2:638891785980:db:parse-server-sandbox-uw2
+              - arn:aws:rds:us-west-2:638891785980:dbuser:parse-server-sandbox-uw2/app_user
+          - Effect: Allow
+            Action: 'elasticache:*'
+            Resource: 
+              - arn:aws:elasticache:us-west-2:638891785980:replicationgroup:parse-server-serverful
+              - arn:aws:elasticache:us-west-2:638891785980:serverlesscache:parse-server-serverless-*
+          - Effect: Allow
+            Action: 's3:*'
+            Resource:
+              - arn:aws:s3:::proscore-docs
+              - arn:aws:s3:::proscore-docs/*

@@ -1,0 +1,42 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Starter user used with the create_user.sh script.'
+Resources:
+  bmorrisPwSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: bmorrisPwSecret
+      Description: 'This secret has a dynamically generated secret password.'
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "bmorris"}'
+        GenerateStringKey: password
+        PasswordLength: 30
+        ExcludeCharacters: '"@/\'
+  bmorris:
+    Type: AWS::IAM::User
+    DependsOn:
+      - bmorrisPwSecret
+    Properties:
+      UserName: '{{resolve:secretsmanager:bmorrisPwSecret:SecretString:username:AWSCURRENT}}'
+      LoginProfile:
+        Password: '{{resolve:secretsmanager:bmorrisPwSecret:SecretString:password:AWSCURRENT}}'
+        PasswordResetRequired: false
+      Groups:
+        - IamAndMfa
+        - Developers
+        - ImportLambdaDevelopers
+        - S3Access
+  bmorrisAccessKey:
+    Type: AWS::IAM::AccessKey
+    DependsOn:
+      - bmorris
+    Properties:
+      UserName: !Ref bmorris
+      Status: Active
+  bmorrisAccessKeySecret:
+    Type: AWS::SecretsManager::Secret
+    DependsOn:
+      - bmorris
+    Properties:
+      Name: bmorrisAccessKeySecret
+      Description: Secret for bmorris IAM access key
+      SecretString: !Sub '{"bmorrisAccessKeyId":"${bmorrisAccessKey}","bmorrisSecretAccessKey":"${bmorrisAccessKey.SecretAccessKey}"}'

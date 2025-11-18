@@ -1,0 +1,336 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template to create CloudWatch alarms for ALB health monitoring'
+
+Parameters:
+  AlarmNotificationEmail:
+    Type: String
+    Description: Email address to receive alarm notifications
+    Default: devops@proscore.ai
+  
+  AlarmThreshold:
+    Type: Number
+    Description: Threshold for unhealthy host count
+    Default: 1
+    
+  EvaluationPeriods:
+    Type: Number
+    Description: Number of periods to evaluate the alarm
+    Default: 2
+    
+  Period:
+    Type: Number
+    Description: Period in seconds to evaluate the metric
+    Default: 300
+
+Resources:
+  AlarmNotificationTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: ALB-Health-Alarms
+      TopicName: ALB-Health-Alarms
+      
+  AlarmNotificationSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Protocol: email
+      Endpoint: !Ref AlarmNotificationEmail
+      TopicArn: !Ref AlarmNotificationTopic
+  DevPortalApiUnhealthyHostAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: DevPortalApi-UnhealthyHostCount-Alarm
+      AlarmDescription: Alarm when unhealthy host count is greater than or equal to threshold
+      MetricName: UnHealthyHostCount
+      Namespace: AWS/ApplicationELB
+      Statistic: Maximum
+      Period: !Ref Period
+      EvaluationPeriods: !Ref EvaluationPeriods
+      Threshold: !Ref AlarmThreshold
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+        - Name: LoadBalancer
+          Value: dev-portal-api
+        - Name: TargetGroup
+          Value: targetgroup/dev-portal-api-tg/7356f0204d7996ec
+      AlarmActions:
+        - !Ref AlarmNotificationTopic
+      InsufficientDataActions:
+        - !Ref AlarmNotificationTopic
+      OKActions:
+        - !Ref AlarmNotificationTopic
+  EmployeesPortalDevUnhealthyHostAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: EmployeesPortalDev-UnhealthyHostCount-Alarm
+      AlarmDescription: Alarm when unhealthy host count is greater than or equal to threshold
+      MetricName: UnHealthyHostCount
+      Namespace: AWS/ApplicationELB
+      Statistic: Maximum
+      Period: !Ref Period
+      EvaluationPeriods: !Ref EvaluationPeriods
+      Threshold: !Ref AlarmThreshold
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+        - Name: LoadBalancer
+          Value: employees-portal-dev
+        - Name: TargetGroup
+          Value: targetgroup/dev-employee-tg-80/b76f9888d8c92da3
+      AlarmActions:
+        - !Ref AlarmNotificationTopic
+      InsufficientDataActions:
+        - !Ref AlarmNotificationTopic
+      OKActions:
+        - !Ref AlarmNotificationTopic
+  AdminDevLbUnhealthyHostAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: AdminDevLb-UnhealthyHostCount-Alarm
+      AlarmDescription: Alarm when unhealthy host count is greater than or equal to threshold
+      MetricName: UnHealthyHostCount
+      Namespace: AWS/ApplicationELB
+      Statistic: Maximum
+      Period: !Ref Period
+      EvaluationPeriods: !Ref EvaluationPeriods
+      Threshold: !Ref AlarmThreshold
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+        - Name: LoadBalancer
+          Value: admin-dev-lb
+        - Name: TargetGroup
+          Value: targetgroup/dev-admin-tg-80/c7526232118733e3
+      AlarmActions:
+        - !Ref AlarmNotificationTopic
+      InsufficientDataActions:
+        - !Ref AlarmNotificationTopic
+      OKActions:
+        - !Ref AlarmNotificationTopic
+  JenkinsUnhealthyHostAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: Jenkins-UnhealthyHostCount-Alarm
+      AlarmDescription: Alarm when unhealthy host count is greater than or equal to threshold
+      MetricName: UnHealthyHostCount
+      Namespace: AWS/ApplicationELB
+      Statistic: Maximum
+      Period: !Ref Period
+      EvaluationPeriods: !Ref EvaluationPeriods
+      Threshold: !Ref AlarmThreshold
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+        - Name: LoadBalancer
+          Value: jenkins
+        - Name: TargetGroup
+          Value: targetgroup/jenkinsTG/86dac7b7ddb74745
+      AlarmActions:
+        - !Ref AlarmNotificationTopic
+      InsufficientDataActions:
+        - !Ref AlarmNotificationTopic
+      OKActions:
+        - !Ref AlarmNotificationTopic
+  AdminProdUnhealthyHostAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: AdminProd-UnhealthyHostCount-Alarm
+      AlarmDescription: Alarm when unhealthy host count is greater than or equal to threshold
+      MetricName: UnHealthyHostCount
+      Namespace: AWS/ApplicationELB
+      Statistic: Maximum
+      Period: !Ref Period
+      EvaluationPeriods: !Ref EvaluationPeriods
+      Threshold: !Ref AlarmThreshold
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+        - Name: LoadBalancer
+          Value: admin-prod
+        - Name: TargetGroup
+          Value: targetgroup/prod-admin-portal/90c878b74f1fc7ff
+      AlarmActions:
+        - !Ref AlarmNotificationTopic
+      InsufficientDataActions:
+        - !Ref AlarmNotificationTopic
+      OKActions:
+        - !Ref AlarmNotificationTopic
+  EmployeePortalProdUnhealthyHostAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: EmployeePortalProd-UnhealthyHostCount-Alarm
+      AlarmDescription: Alarm when unhealthy host count is greater than or equal to threshold
+      MetricName: UnHealthyHostCount
+      Namespace: AWS/ApplicationELB
+      Statistic: Maximum
+      Period: !Ref Period
+      EvaluationPeriods: !Ref EvaluationPeriods
+      Threshold: !Ref AlarmThreshold
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+        - Name: LoadBalancer
+          Value: employee-portal-prod
+        - Name: TargetGroup
+          Value: targetgroup/prod-employee-portal/508a75d226565315
+      AlarmActions:
+        - !Ref AlarmNotificationTopic
+      InsufficientDataActions:
+        - !Ref AlarmNotificationTopic
+      OKActions:
+        - !Ref AlarmNotificationTopic
+  ProdPortalApiUnhealthyHostAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: ProdPortalApi-UnhealthyHostCount-Alarm
+      AlarmDescription: Alarm when unhealthy host count is greater than or equal to threshold
+      MetricName: UnHealthyHostCount
+      Namespace: AWS/ApplicationELB
+      Statistic: Maximum
+      Period: !Ref Period
+      EvaluationPeriods: !Ref EvaluationPeriods
+      Threshold: !Ref AlarmThreshold
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+        - Name: LoadBalancer
+          Value: prod-portal-api
+        - Name: TargetGroup
+          Value: targetgroup/prod-portal-api/1fe97b3148800264
+      AlarmActions:
+        - !Ref AlarmNotificationTopic
+      InsufficientDataActions:
+        - !Ref AlarmNotificationTopic
+      OKActions:
+        - !Ref AlarmNotificationTopic
+  DevPwcApiUnhealthyHostAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: DevPwcApi-UnhealthyHostCount-Alarm
+      AlarmDescription: Alarm when unhealthy host count is greater than or equal to threshold
+      MetricName: UnHealthyHostCount
+      Namespace: AWS/ApplicationELB
+      Statistic: Maximum
+      Period: !Ref Period
+      EvaluationPeriods: !Ref EvaluationPeriods
+      Threshold: !Ref AlarmThreshold
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+        - Name: LoadBalancer
+          Value: dev-pwc-api
+        - Name: TargetGroup
+          Value: targetgroup/pwc-es-api-8365/45889c024375d76a
+      AlarmActions:
+        - !Ref AlarmNotificationTopic
+      InsufficientDataActions:
+        - !Ref AlarmNotificationTopic
+      OKActions:
+        - !Ref AlarmNotificationTopic
+  ProdPwcApiUnhealthyHostAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: ProdPwcApi-UnhealthyHostCount-Alarm
+      AlarmDescription: Alarm when unhealthy host count is greater than or equal to threshold
+      MetricName: UnHealthyHostCount
+      Namespace: AWS/ApplicationELB
+      Statistic: Maximum
+      Period: !Ref Period
+      EvaluationPeriods: !Ref EvaluationPeriods
+      Threshold: !Ref AlarmThreshold
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+        - Name: LoadBalancer
+          Value: prod-pwc-api
+        - Name: TargetGroup
+          Value: targetgroup/prod-pwc-api-8365/a6b1a3c76976b451
+      AlarmActions:
+        - !Ref AlarmNotificationTopic
+      InsufficientDataActions:
+        - !Ref AlarmNotificationTopic
+      OKActions:
+        - !Ref AlarmNotificationTopic
+  QaLoadBalancerUnhealthyHostAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: QaLoadBalancer-UnhealthyHostCount-Alarm
+      AlarmDescription: Alarm when unhealthy host count is greater than or equal to threshold
+      MetricName: UnHealthyHostCount
+      Namespace: AWS/ApplicationELB
+      Statistic: Maximum
+      Period: !Ref Period
+      EvaluationPeriods: !Ref EvaluationPeriods
+      Threshold: !Ref AlarmThreshold
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+        - Name: LoadBalancer
+          Value: QAloadbalancer
+        - Name: TargetGroup
+          Value: targetgroup/qatg/1f8db6367af80aaa
+      AlarmActions:
+        - !Ref AlarmNotificationTopic
+      InsufficientDataActions:
+        - !Ref AlarmNotificationTopic
+      OKActions:
+        - !Ref AlarmNotificationTopic
+  ReportDevUnhealthyHostAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: ReportDev-UnhealthyHostCount-Alarm
+      AlarmDescription: Alarm when unhealthy host count is greater than or equal to threshold
+      MetricName: UnHealthyHostCount
+      Namespace: AWS/ApplicationELB
+      Statistic: Maximum
+      Period: !Ref Period
+      EvaluationPeriods: !Ref EvaluationPeriods
+      Threshold: !Ref AlarmThreshold
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+        - Name: LoadBalancer
+          Value: report-dev
+        - Name: TargetGroup
+          Value: targetgroup/report-internal-dev-tg/28a5bba6b5787819
+      AlarmActions:
+        - !Ref AlarmNotificationTopic
+      InsufficientDataActions:
+        - !Ref AlarmNotificationTopic
+      OKActions:
+        - !Ref AlarmNotificationTopic
+  ImportbeUnhealthyHostAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: Importbe-UnhealthyHostCount-Alarm
+      AlarmDescription: Alarm when unhealthy host count is greater than or equal to threshold
+      MetricName: UnHealthyHostCount
+      Namespace: AWS/ApplicationELB
+      Statistic: Maximum
+      Period: !Ref Period
+      EvaluationPeriods: !Ref EvaluationPeriods
+      Threshold: !Ref AlarmThreshold
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+        - Name: LoadBalancer
+          Value: importbe
+        - Name: TargetGroup
+          Value: targetgroup/importbe/2500263e08d37e4e
+      AlarmActions:
+        - !Ref AlarmNotificationTopic
+      InsufficientDataActions:
+        - !Ref AlarmNotificationTopic
+      OKActions:
+        - !Ref AlarmNotificationTopic
+  AiStructuredImportUnhealthyHostAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: AiStructuredImport-UnhealthyHostCount-Alarm
+      AlarmDescription: Alarm when unhealthy host count is greater than or equal to threshold
+      MetricName: UnHealthyHostCount
+      Namespace: AWS/ApplicationELB
+      Statistic: Maximum
+      Period: !Ref Period
+      EvaluationPeriods: !Ref EvaluationPeriods
+      Threshold: !Ref AlarmThreshold
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Dimensions:
+        - Name: LoadBalancer
+          Value: ai-structured-import
+        - Name: TargetGroup
+          Value: targetgroup/my-target-group/04a05b4cd4093a47
+      AlarmActions:
+        - !Ref AlarmNotificationTopic
+      InsufficientDataActions:
+        - !Ref AlarmNotificationTopic
+      OKActions:
+        - !Ref AlarmNotificationTopic

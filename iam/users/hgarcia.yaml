@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  HectorGarciaPwSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: HectorGarciaPwSecret
+      Description: 'This secret has a dynamically generated secret password.'
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "hgarcia"}'
+        GenerateStringKey: password
+        PasswordLength: 30
+        ExcludeCharacters: '"@/\'
+  hgarcia:
+    Type: AWS::IAM::User
+    DependsOn:
+      - HectorGarciaPwSecret
+    Properties:
+      UserName: '{{resolve:secretsmanager:HectorGarciaPwSecret:SecretString:username:AWSCURRENT}}'
+      LoginProfile:
+        Password: '{{resolve:secretsmanager:HectorGarciaPwSecret:SecretString:password:AWSCURRENT}}'
+        PasswordResetRequired: false
+      Groups:
+        - Developers
+        - Sagemaker
+        - Administrators
+  HectorGarciaAccessKey:
+    Type: AWS::IAM::AccessKey
+    DependsOn:
+      - hgarcia
+    Properties:
+      UserName: !Ref hgarcia
+      Status: Active
+  HectorGarciaAccessKeySecret:
+    Type: AWS::SecretsManager::Secret
+    DependsOn:
+      - hgarcia
+    Properties:
+      Name: HectorGarciaAccessKeySecret
+      Description: Secret for Hector Garcia IAM access key
+      SecretString: !Sub '{"HectorGarciaAccessKeyId":"${HectorGarciaAccessKey}","HectorGarciaSecretAccessKey":"${HectorGarciaAccessKey.SecretAccessKey}"}'

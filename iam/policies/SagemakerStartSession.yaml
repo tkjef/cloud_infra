@@ -1,0 +1,32 @@
+---
+Metadata:
+  AWSToolsMetrics:
+    IaC_Generator: "arn:aws:cloudformation:us-west-2:638891785980:generatedTemplate/08d6b6ca-1f34-4ae6-870c-da6d017ef328"
+Resources:
+  IAMManagedPolicyPolicySagemakerStartSession:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::IAM::ManagedPolicy"
+    DeletionPolicy: "Delete"
+    Properties:
+      ManagedPolicyName: "SagemakerStartSession"
+      Path: "/"
+      Description: "Policy is for accessing Sagemaker Start Session functionality for development team"
+      Groups:
+        - Sagemaker
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - sagemaker:ListSpaces
+              - sagemaker:DescribeSpace
+              - sagemaker:UpdateSpace
+              - sagemaker:ListApps
+              - sagemaker:CreateApp
+              - sagemaker:DeleteApp
+              - sagemaker:DescribeApp
+              - sagemaker:StartSession
+              - sagemaker:DescribeDomain
+              - sagemaker:AddTags
+            Resource: "*"
+
