@@ -1,0 +1,84 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: rds postgres
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Description: 'Environment/region name, prefix for resources'
+  ApplicationName:
+    Type: String
+  PrivateSubnetId1:
+    Type: String
+  PrivateSubnetId2:
+    Type: String
+  PrivateSubnetId3:
+    Type: String
+  AlbSecurityGroup:
+    Type: String
+  DevAdminUser:
+    Default: postgres
+    NoEcho: 'true'
+    Description: admin user
+    Type: String
+    MinLength: '1'
+    MaxLength: '16'
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: must begin with a letter and contain only alphanumeric characters
+
+Resources:
+  DevAdminSecret:
+    Type: 'AWS::SecretsManager::Secret'
+    Properties:
+      KmsKeyId: alias/aws/secretsmanager
+      GenerateSecretString:
+        ExcludeLowercase: false
+        ExcludeNumbers: false
+        ExcludePunctuation: false
+        ExcludeUppercase: false
+        PasswordLength: 32
+        ExcludeCharacters: /"@\\
+
+  DevAppUserSecret:
+    Type: 'AWS::SecretsManager::Secret'
+    Properties:
+      KmsKeyId: alias/aws/secretsmanager
+      GenerateSecretString:
+        ExcludeLowercase: false
+        ExcludeNumbers: false
+        ExcludePunctuation: false
+        ExcludeUppercase: false
+        PasswordLength: 32
+        ExcludeCharacters: /"@\\
+
+  SubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Subnet group for dev private vpc subnet azs us-east-2a|b
+      SubnetIds:
+        - !Ref PrivateSubnetId1
+        - !Ref PrivateSubnetId2
+        - !Ref PrivateSubnetId3
+
+  DbInstance:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBInstanceClass: db.m7g.large
+      AllocatedStorage: '200'
+      DBName: deregulator
+      Engine: postgres
+      EngineVersion: '16.8'
+      MasterUsername: !Ref DevAdminUser
+      MasterUserPassword:
+        'Fn::Sub': '{{resolve:secretsmanager:${DevAdminSecret}}}'
+      Port: '5432'
+      DBInstanceIdentifier: !Sub '${EnvironmentName}-${ApplicationName}'
+      VPCSecurityGroups:
+        - !Ref AlbSecurityGroup
+      DBSubnetGroupName: !Ref SubnetGroup
+      PubliclyAccessible: false
+      StorageEncrypted: true
+      StorageType: standard
+      BackupRetentionPeriod: 1
+      DeleteAutomatedBackups: true
+      DeletionProtection: false
+      MultiAZ: true

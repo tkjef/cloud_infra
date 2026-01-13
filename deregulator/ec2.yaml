@@ -1,0 +1,149 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: EC2 instance with SSM and Patch Manager
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Description: 'Environment/region name, prefix for resources'
+  ApplicationName:
+    Type: String
+  VpcId:
+    Type: String
+  SubnetId:
+    Type: String
+  InstanceType:
+    Type: String
+    Default: t3.2xlarge
+    Description: EC2 instance type
+  LatestAmiId:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/al2023-ami-kernel-6.1-x86_64
+    Description: Amazon Linux 2023 AMI
+
+Resources:
+  InstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow outbound HTTP/HTTPS
+      VpcId: !Ref VpcId
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: !Sub '${EnvironmentName}-${ApplicationName}-sg'
+
+  EC2Role:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+      Tags:
+        - Key: Name
+          Value: EC2SSMRole
+
+  EC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref EC2Role
+
+  PrivateEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref LatestAmiId
+      InstanceType: !Ref InstanceType
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: 200
+            VolumeType: gp2
+      IamInstanceProfile: !Ref EC2InstanceProfile
+      SubnetId: !Ref SubnetId
+      SecurityGroupIds:
+        - !GetAtt InstanceSecurityGroup.GroupId
+      SourceDestCheck: false
+      Tags:
+        - Key: Name
+          Value: !Sub '${EnvironmentName}-${ApplicationName}'
+      MetadataOptions:
+        HttpEndpoint: enabled
+        HttpTokens: required
+        HttpPutResponseHopLimit: 2
+
+  SSMLogsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${AWS::StackName}-ssm-logs-${AWS::AccountId}'
+      VersioningConfiguration:
+        Status: Suspended
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+    DeletionPolicy: Retain
+
+  SSMLogsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref SSMLogsBucket
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ssm.amazonaws.com
+            Action:
+              - s3:PutObject
+              - s3:PutObjectAcl
+            Resource: !Sub '${SSMLogsBucket.Arn}/patch-logs/*'   
+
+  SSMPatchBaseline:
+    Type: AWS::SSM::PatchBaseline
+    Properties:
+      Name: !Sub '${AWS::StackName}-PatchBaseline'
+      OperatingSystem: AMAZON_LINUX_2
+      ApprovalRules:
+        PatchRules:
+          - PatchFilterGroup:
+              PatchFilters:
+                - Key: CLASSIFICATION
+                  Values:
+                    - Security
+                    - Bugfix
+                - Key: SEVERITY
+                  Values:
+                    - Important
+                    - Critical
+            ApproveAfterDays: 7   
+
+  SSMAssociation:
+    Type: AWS::SSM::Association
+    Properties:
+      Name: AWS-RunPatchBaseline
+      Targets:
+        - Key: InstanceIds
+          Values:
+            - !Ref PrivateEC2Instance
+      Parameters:
+        Operation:
+          - Scan
+      ScheduleExpression: rate(1 day)
+      OutputLocation:
+        S3Location:
+          OutputS3BucketName: !Ref SSMLogsBucket
+          OutputS3KeyPrefix: patch-logs
